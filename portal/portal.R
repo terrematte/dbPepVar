@@ -8,8 +8,8 @@ dbPepVar <- dbPepVar_snps[,cols]
 
 db <- DT::datatable(dbPepVar,  
           class = 'cell-border stripe',
-          extensions = 'Buttons', 
-          options = list(dom = 'Bfrtip', buttons = c('csv', 'pdf'))
+          #extensions = 'Buttons', 
+          #options = list(dom = 'Bfrtip', buttons = c('csv', 'pdf'))# slow
           #caption = 'Table 1: This is a simple caption for the table.',
           #options = list(searchHighlight = TRUE), # slow
           #filter = 'top' # slow
