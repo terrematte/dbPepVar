@@ -2,3 +2,7 @@
 .Rhistory
 .RData
 .Ruserdata
+setAccountInfo.R
+portal/index_files/*
+portal/dbPepVar_snps_files/*
+rsconnect/*
