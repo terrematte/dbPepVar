@@ -19,11 +19,11 @@ load("data/dbPepVar_snps.Rda")
 
 
 link_genecards <- function(val) {
-    sprintf('<a href="https://www.genecards.org/cgi-bin/carddisp.pl?gene=%s#publications" target="_blank"><img src="%s"/></a>', val,  knitr::image_uri("icons/logo_genecards.png"))
+    sprintf('<a href="https://www.genecards.org/cgi-bin/carddisp.pl?gene=%s#publications" target="_blank"><img src="%s"  width="90" height="23"/></a>', val,  knitr::image_uri("icons/logo_genecards.png"))
 }
 
 link_snps <- function(val) {
-    sprintf('<a href="https://www.ncbi.nlm.nih.gov/snp/%s" target="_blank"><img src="%s"/> SNPs</a>', val,  knitr::image_uri("icons/logo_ncbi.gif"))
+    sprintf('<a href="https://www.ncbi.nlm.nih.gov/snp/%s#publications" target="_blank"><img src="%s"/> SNPs</a>', val,  knitr::image_uri("icons/logo_ncbi.gif"))
 }
 
 link_proteins <- function(val) {
@@ -33,9 +33,6 @@ link_proteins <- function(val) {
 dbPepVar_snps <- dbPepVar_snps %>%
     dplyr::select(c("Cancer_Type", "Hugo_Symbol", "Tumor_Sample_Barcode", "Refseq_protein", "Variant_Classification", "HGVSp", "snp_id",  "Chromosome", "Start_Position", "End_Position", "band", "i_transcript_name", "NMD")) %>%
     dplyr::mutate(
-        #SNPs_Publications = paste0("<a href='https://www.ncbi.nlm.nih.gov/snp/",snp_id,"#publications' target='_blank'>", camino_ncbi," SNP</a>"),
-        #GeneCards = paste0("<a href='https://www.genecards.org/cgi-bin/carddisp.pl?gene=",Hugo_Symbol,"' target='_blank'>", camino_genecards,"</a>"),
-        #Protein_search = paste0("<a href='https://www.ncbi.nlm.nih.gov/protein/",Refseq_protein,"' target='_blank'>", camino_ncbi," Protein</a>"),
         GeneCards = link_genecards(Hugo_Symbol),
         SNPs_Publications = link_snps(snp_id),
         Protein_search = link_proteins(Refseq_protein),
@@ -63,8 +60,14 @@ rm(dbPepVar_snps,by, link_genecards, link_proteins, link_snps, f)
 
 dbPepVar$Other_Hugo_Symbol[is.na(dbPepVar$Other_Hugo_Symbol)] <- "-"
 
-dbPepVar_mismatch <- unique(dbPepVar[dbPepVar$Hugo_Symbol != dbPepVar$Other_Hugo_Symbol & dbPepVar$Other_Hugo_Symbol != "-", c("Hugo_Symbol", "Other_Hugo_Symbol", "GeneCards", "Refseq_protein", "Protein_search", "HGVSp", "Pos_Mut")])
+dbPepVar_mismatch <- unique(dbPepVar[dbPepVar$Hugo_Symbol != dbPepVar$Other_Hugo_Symbol & dbPepVar$Other_Hugo_Symbol != "-", c("Hugo_Symbol", "Other_Hugo_Symbol", "GeneCards", "Refseq_protein", "Protein_search", "HGVSp")])
+dbPepVar_mismatch <- as.data.frame(dbPepVar_mismatch, row.names= c(1:nrow( dbPepVar_mismatch)))
 
+dbPepVar_mismatch <- dbPepVar_mismatch  %>%
+    dplyr::mutate(
+        GeneCards_Other_Symbol = link_genecards(Other_Hugo_Symbol)
+    )  %>%
+    as.data.frame()
 
 BrCa <- dbPepVar[dbPepVar$Cancer_Type =="BrCa", ]
 CrCa <- dbPepVar[dbPepVar$Cancer_Type =="CrCa", ]
@@ -139,9 +142,8 @@ server <- function(input, output) {
 
     list.options <- list(
         searchHighlight = TRUE,
-        #pageLength = 15,
         orientation ='landscape',
-        lengthMenu = c(10, 30, 50),
+        #lengthMenu = c(10, 30, 50),
         dom = 'Bfrtip',
         buttons =
             list(
@@ -158,75 +160,88 @@ server <- function(input, output) {
             )
     )
     
+    # dbPepVar
     output$tb_dbPepVar <- DT::renderDataTable({
         DT::datatable(
             dbPepVar[, input$show_vars_dbPepVar, drop = FALSE],
             class = 'cell-border stripe',
             rownames = FALSE,
+            pageLength = 30,
             filter = 'top',
             extensions = c('Buttons'),
-            options = list.options)
+            options = list.options,  
+            escape=FALSE)
         
-    },  escape=FALSE)
+    })
 
-    output$tb_dbPepVar <- DT::renderDataTable({
+    # dbPepVar_mismatch
+    output$tb_dbPepVar_mismatch <- DT::renderDataTable({
         DT::datatable(
             dbPepVar_mismatch[, input$show_vars_dbPepVar_mismatch, drop = FALSE],
             class = 'cell-border stripe',
             rownames = FALSE,
+            pageLength = 35,
             filter = 'top',
             extensions = c('Buttons'),
-            options = list.options)
+            options = list.options,  
+            escape=FALSE)
 
     })
 
-    # sorted columns are colored now because CSS are attached to them
+    # BrCa
     output$tb_BrCa <- DT::renderDataTable({
         DT::datatable(
             BrCa[, input$show_vars_BrCa, drop = FALSE],
             class = 'cell-border stripe',
             rownames = FALSE,
+            pageLength = 30,
             filter = 'top',
             extensions = c('Buttons'),
-            options = list.options
+            options = list.options,  
+            escape=FALSE
             )
-    },  escape=FALSE)
+    })
 
-    # customize the length drop-down menu; display 5 rows per page by default
+    # CrCa
     output$tb_CrCa <- DT::renderDataTable({
         DT::datatable(
             CrCa[, input$show_vars_CrCa, drop = FALSE],
             class = 'cell-border stripe',
             rownames = FALSE,
+            pageLength = 30,
             filter = 'top',
             extensions = c('Buttons'),
-            options = list.options
+            options = list.options,  
+            escape=FALSE
             )
-    },  escape=FALSE)
+    })
 
-    # customize the length drop-down menu; display 5 rows per page by default
+    # OvCa
     output$tb_OvCa <- DT::renderDataTable({
         DT::datatable(
             OvCa[, input$show_vars_OvCa, drop = FALSE],
             class = 'cell-border stripe',
             rownames = FALSE,
+            pageLength = 30,
             filter = 'top',
             extensions = c('Buttons'),
-            options = list.options
+            options = list.options,  
+            escape=FALSE
         )
-    },  escape=FALSE)
+    })
 
-    # customize the length drop-down menu; display 5 rows per page by default
     output$tb_PrCa <- DT::renderDataTable({
         DT::datatable(
             PrCa[, input$show_vars_PrCa, drop = FALSE],
             class = 'cell-border stripe',
             rownames = FALSE,
+            pageLength = 30,
             filter = 'top',
             extensions = c('Buttons'),
-            options = list.options
-        )
-    },  escape=FALSE)
+            options = list.options,  
+            escape=FALSE
+            )
+    })
 }
 
 # Run the application
