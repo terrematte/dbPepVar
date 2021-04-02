@@ -56,8 +56,6 @@ dbPepVar <- dbPepVar %>%
 by <- c("Cancer_Type", "Refseq_protein", "snp_id")
 
 dbPepVar <- dplyr::left_join(dbPepVar_snps, dbPepVar, by = by)
-rm(dbPepVar_snps,by, link_genecards, link_proteins, link_snps, f)
-
 dbPepVar$Other_Hugo_Symbol[is.na(dbPepVar$Other_Hugo_Symbol)] <- "-"
 
 dbPepVar_mismatch <- unique(dbPepVar[dbPepVar$Hugo_Symbol != dbPepVar$Other_Hugo_Symbol & dbPepVar$Other_Hugo_Symbol != "-", c("Hugo_Symbol", "Other_Hugo_Symbol", "GeneCards", "Refseq_protein", "Protein_search", "HGVSp")])
@@ -74,6 +72,7 @@ CrCa <- dbPepVar[dbPepVar$Cancer_Type =="CrCa", ]
 OvCa <- dbPepVar[dbPepVar$Cancer_Type =="OvCa", ]
 PrCa <- dbPepVar[dbPepVar$Cancer_Type =="PrCa", ]
 
+rm(dbPepVar_snps,by, link_genecards, link_proteins, link_snps, f)
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
@@ -143,7 +142,6 @@ server <- function(input, output) {
     list.options <- list(
         searchHighlight = TRUE,
         orientation ='landscape',
-        #lengthMenu = c(10, 30, 50),
         dom = 'Bfrtip',
         buttons =
             list(
@@ -166,7 +164,6 @@ server <- function(input, output) {
             dbPepVar[, input$show_vars_dbPepVar, drop = FALSE],
             class = 'cell-border stripe',
             rownames = FALSE,
-            pageLength = 30,
             filter = 'top',
             extensions = c('Buttons'),
             options = list.options,  
@@ -180,7 +177,6 @@ server <- function(input, output) {
             dbPepVar_mismatch[, input$show_vars_dbPepVar_mismatch, drop = FALSE],
             class = 'cell-border stripe',
             rownames = FALSE,
-            pageLength = 35,
             filter = 'top',
             extensions = c('Buttons'),
             options = list.options,  
@@ -194,7 +190,6 @@ server <- function(input, output) {
             BrCa[, input$show_vars_BrCa, drop = FALSE],
             class = 'cell-border stripe',
             rownames = FALSE,
-            pageLength = 30,
             filter = 'top',
             extensions = c('Buttons'),
             options = list.options,  
@@ -208,7 +203,6 @@ server <- function(input, output) {
             CrCa[, input$show_vars_CrCa, drop = FALSE],
             class = 'cell-border stripe',
             rownames = FALSE,
-            pageLength = 30,
             filter = 'top',
             extensions = c('Buttons'),
             options = list.options,  
@@ -222,7 +216,6 @@ server <- function(input, output) {
             OvCa[, input$show_vars_OvCa, drop = FALSE],
             class = 'cell-border stripe',
             rownames = FALSE,
-            pageLength = 30,
             filter = 'top',
             extensions = c('Buttons'),
             options = list.options,  
@@ -235,7 +228,6 @@ server <- function(input, output) {
             PrCa[, input$show_vars_PrCa, drop = FALSE],
             class = 'cell-border stripe',
             rownames = FALSE,
-            pageLength = 30,
             filter = 'top',
             extensions = c('Buttons'),
             options = list.options,  
