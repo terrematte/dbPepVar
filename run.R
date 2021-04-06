@@ -1,11 +1,11 @@
-setwd("~/dbPepVar/")
+#setwd("~/bdbPepVar/")
 library(shiny)
 library(rsconnect)
 
 source("setAccountInfo.R")
 
-runApp(appDir = "~/dbPepVar/", display.mode="showcase")
-runApp(appDir = "~/dbPepVar/")
+runApp(appDir = "~/bio/dbPepVar/", display.mode="showcase")
+runApp(appDir = "~/bio/dbPepVar/")
 
 deployApp()
 forgetDeployment()
