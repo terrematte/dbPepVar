@@ -3,7 +3,7 @@
 GYG1     LDHA     NACA2    PDCD6    SPRR1B   SPRR2F   TRIP6    ARHGEF25 CABS1    HNRNPC   SMG5
 * Check dbPepVarMismatch.
 * Add a select option for number of rows.
-* Allow regex
+* -Allow regex-
 * Organizing order of columns to show.
 * Check examples: 
   * https://plotly-r.com/boxplots.html

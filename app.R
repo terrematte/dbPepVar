@@ -8,133 +8,126 @@
 #
 
 library(shiny)
+#if(!require(shinydashboard)){ install.packages('shinydashboard') }
 library(ggplot2)  # for the diamonds dataset
 if(!require(DT)){ install.packages('DT') }
 
-load("data/dbPepVar_snps.Rda")
-
+# Functions
 img_uri <- function(x) { sprintf('<img src="%s"/>', knitr::image_uri(x)) }
 img_uri_icon <- function(x) { sprintf('<img src="%s" width="18" height="18"/>', knitr::image_uri(x)) }
-
-# camino_genecards = img_uri("icons/logo_genecards.png")
-# camino_ncbi = img_uri("icons/logo_ncbi.gif")
+img_uri_favicon <- function(x) { sprintf('%s', knitr::image_uri(x)) }
 
 
 link_genecards <- function(val) {
-    sprintf('<a href="https://www.genecards.org/cgi-bin/carddisp.pl?gene=%s#publications" target="_blank"><img src="%s"  width="90" height="23"/></a>', val,  knitr::image_uri("icons/logo_genecards.png"))
+    sprintf('<a href="https://www.genecards.org/cgi-bin/carddisp.pl?gene=%s#publications" target="_blank"><img src="%s"  width="90" height="20"/></a>', val,  knitr::image_uri("icons/genecards.png"))
 }
 
 link_snps <- function(val) {
-    sprintf('<a href="https://www.ncbi.nlm.nih.gov/snp/%s#publications" target="_blank"><img src="%s"/> SNPs</a>', val,  knitr::image_uri("icons/logo_ncbi.gif"))
+    sprintf('<a href="https://www.ncbi.nlm.nih.gov/snp/%s#publications" target="_blank"><img src="%s" height="18"/></a>', val,  knitr::image_uri("icons/logo_dbSNP.png"))
 }
 
 link_proteins <- function(val) {
-    sprintf('<a href="https://www.ncbi.nlm.nih.gov/protein/%s" target="_blank"><img src="%s"/> Proteins</a>', val,  knitr::image_uri("icons/logo_ncbi.gif"))
+    sprintf('<a href="https://www.ncbi.nlm.nih.gov/protein/%s" target="_blank"><img src="%s"  height="18"/></a>', val,  knitr::image_uri("icons/logo_ncbi.gif"))
 }
 
+# Load data
+load("data/dbPepVar_snps.Rda")
+
 dbPepVar_snps <- dbPepVar_snps %>%
-    dplyr::select(c("Cancer_Type", "Hugo_Symbol", "Tumor_Sample_Barcode", "Refseq_protein", "Variant_Classification", "HGVSp", "snp_id",  "Chromosome", "Start_Position", "End_Position", "band", "i_transcript_name", "NMD")) %>%
-    dplyr::mutate(
-        GeneCards = link_genecards(Hugo_Symbol),
-        SNPs_Publications = link_snps(snp_id),
-        Protein_search = link_proteins(Refseq_protein),
-        NMD = ifelse(NMD, "TRUE", "FALSE")
-    )  %>%
-    dplyr::mutate_if(is.factor, as.character) %>%
-    as.data.frame()
+    dplyr::select(c("Cancer_Type", "Hugo_Symbol", "Tumor_Sample_Barcode", "Refseq_protein", "Variant_Classification", 
+                    "HGVSp", "snp_id",  "Chromosome", "Start_Position", "End_Position", "band", "i_transcript_name", "NMD"))
 
 f <-  "data/dbPepVar_PTC_Peptides.tsv"
-dbPepVar <- read.table(f, header = T, sep="\t", stringsAsFactors=F, quote='"')
-
-dbPepVar <- dbPepVar %>%
-    dplyr::select(-c("Variant_Classification"))  %>%
-    dplyr::rename(
-        Other_Hugo_Symbol = "Gene",
-        Others_Samples_Barcode = "Tumor_Sample_Barcode") %>%
-    dplyr::mutate(
-        Pep = round(Pep, digits = 3),
-        PTC = ifelse(PTC == 1, "TRUE", "FALSE")) %>%
-    dplyr::mutate_if(is.factor, as.character) %>%
-    as.data.frame()
+dbPepVar <- read.table(f, header = T, sep="\t", stringsAsFactors=F, quote='"')  %>%
+    dplyr::select(-c("Gene","Variant_Classification"))
 
 by <- c("Cancer_Type", "Refseq_protein", "snp_id")
 
-dbPepVar <- dplyr::left_join(dbPepVar_snps, dbPepVar, by = by)
-dbPepVar$Other_Hugo_Symbol[is.na(dbPepVar$Other_Hugo_Symbol)] <- "-"
-
-dbPepVar_mismatch <- unique(dbPepVar[dbPepVar$Hugo_Symbol != dbPepVar$Other_Hugo_Symbol & dbPepVar$Other_Hugo_Symbol != "-", c("Hugo_Symbol", "Other_Hugo_Symbol", "GeneCards", "Refseq_protein", "Protein_search", "HGVSp")])
-dbPepVar_mismatch <- as.data.frame(dbPepVar_mismatch, row.names= c(1:nrow( dbPepVar_mismatch)))
-
-dbPepVar_mismatch <- dbPepVar_mismatch  %>%
+dbPepVar <- dplyr::left_join(dbPepVar_snps, dbPepVar, by = by) %>%
     dplyr::mutate(
-        GeneCards_Other_Symbol = link_genecards(Other_Hugo_Symbol)
-    )  %>%
-    as.data.frame()
+        GeneCards = link_genecards(Hugo_Symbol),
+        SNP_search = link_snps(snp_id),
+        Protein_search = link_proteins(Refseq_protein),
+        Pep = round(Pep, digits = 3),
+        NMD_gene = ifelse(NMD, "TRUE", "FALSE"),
+        PTC_gene = ifelse(PTC == 1, "TRUE", "FALSE")) %>%
+    dplyr::rename(          
+        Gene = "Hugo_Symbol",
+        Sample = "Tumor_Sample_Barcode.x",
+        Others_Samples = "Tumor_Sample_Barcode.y") %>%
+    dplyr::select(c("Cancer_Type", "Sample", "Others_Samples", "Gene", "GeneCards",  "Refseq_protein", "Protein_search",
+                    "snp_id", "SNP_search", "Variant_Classification", "HGVSp", "i_transcript_name", "Chromosome", "Start_Position", "End_Position", "band", 
+                    "NMD_gene", "Peptide", "PTC_gene", "Score", "Pep", "Size_Ref", "Size_Mut", "Pos_Mut", "Rate_Size_Prot", "Rate_Pos_Mut")) %>%
+    dplyr::mutate_if(is.factor, as.character)  %>%
+    dplyr::mutate_at(vars("Variant_Classification", "Cancer_Type", "Chromosome"), as.factor) 
+
+rm(dbPepVar_snps,by, link_genecards, link_proteins, link_snps, f)
 
 BrCa <- dbPepVar[dbPepVar$Cancer_Type =="BrCa", ]
 CrCa <- dbPepVar[dbPepVar$Cancer_Type =="CrCa", ]
 OvCa <- dbPepVar[dbPepVar$Cancer_Type =="OvCa", ]
 PrCa <- dbPepVar[dbPepVar$Cancer_Type =="PrCa", ]
 
-rm(dbPepVar_snps,by, link_genecards, link_proteins, link_snps, f)
+
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
-    
-    # tags$head(tags$link(rel="icon", 
-    #                     href="icons/icon.png",
-    #                     type = "image/gif/png")),
-    
+     
     # Application title
     titlePanel(
         windowTitle = "dbPepVar",
-        title = "dbPepVar"
+        title = tags$head(tags$link(rel="icon", 
+                                    href=img_uri_favicon("icons/favicon.png"),
+                                    type="image/x-icon"))
         ),
 
+    # (tags$head(tags$link(rel="icon", 
+    #                      href=img_uri_favicon("icons/favicon.png"), 
+    #                      type="image/x-icon")), "dbPepVar")
+    # shiny::tags$head(tags$link(rel = "icon", type = "image/gif/png", href = "icons/favicon.png")),   
+    # shiny::tags$head(tags$title("dbPepVar")),
+    #shiny::tags$head(HTML("<title>dbPepVar</title> <link rel='icon' type='image/gif/png' href='favicon.png'>")), #WIth company logo
+    
     # Sidebar with a slider input for number of bins
     sidebarLayout(
         sidebarPanel(
             conditionalPanel(
                 'input.dataset === "dbPepVar"',
                 checkboxGroupInput("show_vars_dbPepVar", "Select columns in dbPepVar to show:",
-                                   names(dbPepVar), selected = names(dbPepVar)[c(1:7,14:16)]) 
-            ),
-            conditionalPanel(
-                'input.dataset === "dbPepVar_mismatch"',
-                checkboxGroupInput("show_vars_dbPepVar_mismatch", "Select columns in dbPepVar_mismatch to show:",
-                                   names(dbPepVar_mismatch), selected = names(dbPepVar_mismatch))
+                                   names(dbPepVar), selected = names(dbPepVar)[c(1,2,4:11)]) 
             ),
             conditionalPanel(
                 'input.dataset === "BrCa"',
                 checkboxGroupInput("show_vars_BrCa", "Select columns in BrCa to show:",
-                                   names(BrCa), selected = names(BrCa)[c(1:7,14:16)])
+                                   names(BrCa), selected = names(BrCa)[c(1,2,4:11)])
             ),
             conditionalPanel(
                 'input.dataset === "CrCa"',
                 checkboxGroupInput("show_vars_CrCa", "Select columns in CrCa to show:",
-                                   names(CrCa), selected = names(CrCa)[c(1:7,14:16)])
+                                   names(CrCa), selected = names(CrCa)[c(1,2,4:11)])
             ),
             conditionalPanel(
                 'input.dataset === "OvCa"',
                 checkboxGroupInput("show_vars_OvCa", "Select columns in OvCa to show:",
-                                   names(OvCa), selected = names(OvCa)[c(1:7,14:16)])
+                                   names(OvCa), selected = names(OvCa)[c(1,2,4:11)])
             ),
             conditionalPanel(
                 'input.dataset === "PrCa"',
                 checkboxGroupInput("show_vars_PrCa", "Select columns in PrCa to show:",
-                                   names(PrCa), selected = names(PrCa)[c(1:7,14:16)])
-            )
+                                   names(PrCa), selected = names(PrCa)[c(1,2,4:11)])
+            ),
+            width = 3
         ),
         mainPanel(
             tabsetPanel(
                 id = 'dataset',
                 tabPanel("dbPepVar", DT::dataTableOutput("tb_dbPepVar")),
-                tabPanel("dbPepVar_mismatch", DT::dataTableOutput("tb_dbPepVar_mismatch")),
                 tabPanel("BrCa", DT::dataTableOutput("tb_BrCa")),
                 tabPanel("CrCa", DT::dataTableOutput("tb_CrCa")),
                 tabPanel("OvCa", DT::dataTableOutput("tb_OvCa")),
                 tabPanel("PrCa", DT::dataTableOutput("tb_PrCa"))
-            )
+            ),
+            width = 9
         )
     )
 )
@@ -153,8 +146,9 @@ server <- function(input, output) {
     list.options <- list(
         pageLength = 10,
         lengthMenu = c(10, 25, 50, 100),
-        #search = list(regex = TRUE),
+        search = list(regex = TRUE),
         searchHighlight = TRUE,
+        colReorder = TRUE,
         orientation ='landscape',
         dom = "<'row'<'col-md-6'l><'col-md-3'B><'col-md-3'f>><'row'<'col-md-12't>><'row'<'col-md-3'i><'col-md-6'><'col-md-3'p>>",
         #dom = 'lBfrtip',
@@ -180,23 +174,10 @@ server <- function(input, output) {
             class = 'cell-border stripe',
             rownames = FALSE,
             filter = 'top',
-            extensions = c('Buttons'),
+            extensions = c('Buttons', "ColReorder"),
             options = list.options,  
             escape=FALSE)
         
-    })
-
-    # dbPepVar_mismatch
-    output$tb_dbPepVar_mismatch <- DT::renderDataTable({
-        DT::datatable(
-            dbPepVar_mismatch[, input$show_vars_dbPepVar_mismatch, drop = FALSE],
-            class = 'cell-border stripe',
-            rownames = FALSE,
-            filter = 'top',
-            extensions = c('Buttons'),
-            options = list.options,  
-            escape=FALSE)
-
     })
 
     # BrCa
@@ -206,7 +187,7 @@ server <- function(input, output) {
             class = 'cell-border stripe',
             rownames = FALSE,
             filter = 'top',
-            extensions = c('Buttons'),
+            extensions = c('Buttons', "ColReorder"),
             options = list.options,  
             escape=FALSE
             )
@@ -219,7 +200,7 @@ server <- function(input, output) {
             class = 'cell-border stripe',
             rownames = FALSE,
             filter = 'top',
-            extensions = c('Buttons'),
+            extensions = c('Buttons', "ColReorder"),
             options = list.options,  
             escape=FALSE
             )
@@ -232,7 +213,7 @@ server <- function(input, output) {
             class = 'cell-border stripe',
             rownames = FALSE,
             filter = 'top',
-            extensions = c('Buttons'),
+            extensions = c('Buttons', "ColReorder"),
             options = list.options,  
             escape=FALSE
         )
@@ -244,7 +225,7 @@ server <- function(input, output) {
             class = 'cell-border stripe',
             rownames = FALSE,
             filter = 'top',
-            extensions = c('Buttons'),
+            extensions = c('Buttons', "ColReorder"),
             options = list.options,  
             escape=FALSE
             )
