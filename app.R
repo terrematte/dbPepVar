@@ -14,7 +14,7 @@ if(!require(DT)){ install.packages('DT') }
 load("data/dbPepVar_snps.Rda")
 
 img_uri <- function(x) { sprintf('<img src="%s"/>', knitr::image_uri(x)) }
-img_uri_icon <- function(x) { sprintf('<img src="%s" width="20" height="20"/>', knitr::image_uri(x)) }
+img_uri_icon <- function(x) { sprintf('<img src="%s" width="18" height="18"/>', knitr::image_uri(x)) }
 
 # camino_genecards = img_uri("icons/logo_genecards.png")
 # camino_ncbi = img_uri("icons/logo_ncbi.gif")
@@ -40,6 +40,7 @@ dbPepVar_snps <- dbPepVar_snps %>%
         Protein_search = link_proteins(Refseq_protein),
         NMD = ifelse(NMD, "TRUE", "FALSE")
     )  %>%
+    dplyr::mutate_if(is.factor, as.character) %>%
     as.data.frame()
 
 f <-  "data/dbPepVar_PTC_Peptides.tsv"
@@ -53,6 +54,7 @@ dbPepVar <- dbPepVar %>%
     dplyr::mutate(
         Pep = round(Pep, digits = 3),
         PTC = ifelse(PTC == 1, "TRUE", "FALSE")) %>%
+    dplyr::mutate_if(is.factor, as.character) %>%
     as.data.frame()
 
 by <- c("Cancer_Type", "Refseq_protein", "snp_id")
