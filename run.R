@@ -1,12 +1,20 @@
 setwd("~/dbPepVar/")
+
+# Load libraries
 library(shiny)
-library(rsconnect)
+#library(rsconnect)
 
-source("setAccountInfo.R")
-
-runApp(appDir = "~/dbPepVar/", display.mode="showcase")
+# Run on local RStudio
 runApp(appDir = "~/dbPepVar/")
+#runApp(appDir = "~/dbPepVar/", display.mode="showcase")
 
-deployApp()
-forgetDeployment()
+# Load login and token of shinyapps.io account in a separated file added to .gitignore:
+# rsconnect::setAccountInfo(name='terrematte', token='xxxxxx', secret='xxxx')
+#source("setAccountInfo.R")
+
+# Deploy to shinyapps.io 
+#deployApp()
+
+# UnDeploy of shinyapps.io 
+#forgetDeployment()
 
