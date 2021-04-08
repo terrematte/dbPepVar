@@ -13,7 +13,9 @@ if(!require(DT)){ install.packages('DT') }
 
 load("data/dbPepVar_snps.Rda")
 
-# img_uri <- function(x) { sprintf('<img src="%s"/>', knitr::image_uri(x)) }
+img_uri <- function(x) { sprintf('<img src="%s"/>', knitr::image_uri(x)) }
+img_uri_icon <- function(x) { sprintf('<img src="%s" width="20" height="20"/>', knitr::image_uri(x)) }
+
 # camino_genecards = img_uri("icons/logo_genecards.png")
 # camino_ncbi = img_uri("icons/logo_ncbi.gif")
 
@@ -138,15 +140,26 @@ ui <- fluidPage(
 # Define server logic
 server <- function(input, output) {
 
-
+    # B - Buttons
+    # l - Length changing input control
+    # f - Filtering input
+    # r - pRocessing display element
+    # t - Table
+    # i - Table information summary
+    # p - Pagination control
+    
     list.options <- list(
+        pageLength = 10,
+        lengthMenu = c(10, 25, 50, 100),
+        #search = list(regex = TRUE),
         searchHighlight = TRUE,
         orientation ='landscape',
-        dom = 'Bfrtip',
+        dom = "<'row'<'col-md-6'l><'col-md-3'B><'col-md-3'f>><'row'<'col-md-12't>><'row'<'col-md-3'i><'col-md-6'><'col-md-3'p>>",
+        #dom = 'lBfrtip',
         buttons =
             list(
                  list(extend = 'pdf',
-                      text = '<span class="glyphicon glyphicon-th"></span>',
+                      text = img_uri_icon('icons/pdf_icon.png'),
                       pageSize = 'A4',
                       orientation = 'landscape',
                       filename = 'dbPepVar'
