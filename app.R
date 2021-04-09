@@ -11,6 +11,7 @@ library(shiny)
 #if(!require(shinydashboard)){ install.packages('shinydashboard') }
 library(ggplot2)  # for the diamonds dataset
 if(!require(DT)){ install.packages('DT') }
+if(!require(plotly)){ install.packages('plotly') }
 
 # Functions
 img_uri <- function(x) { sprintf('<img src="%s"/>', knitr::image_uri(x)) }
@@ -80,39 +81,39 @@ ui <- fluidPage(
                                     href=img_uri_favicon("icons/favicon.png"),
                                     type="image/x-icon"))
         ),
+    headerPanel("dbPepVar"),
 
-    # (tags$head(tags$link(rel="icon", 
-    #                      href=img_uri_favicon("icons/favicon.png"), 
-    #                      type="image/x-icon")), "dbPepVar")
-    # shiny::tags$head(tags$link(rel = "icon", type = "image/gif/png", href = "icons/favicon.png")),   
-    # shiny::tags$head(tags$title("dbPepVar")),
-    #shiny::tags$head(HTML("<title>dbPepVar</title> <link rel='icon' type='image/gif/png' href='favicon.png'>")), #WIth company logo
-    
     # Sidebar with a slider input for number of bins
     sidebarLayout(
         sidebarPanel(
             conditionalPanel(
-                'input.dataset === "dbPepVar"',
+                'input.tab === "Plots"',
+                selectInput('xcol','X Variable', names(mtcars)),
+                selectInput('ycol','Y Variable', names(mtcars)),
+                selected = names(mtcars)[[2]]
+            ),
+            conditionalPanel(
+                'input.tab === "dbPepVar"',
                 checkboxGroupInput("show_vars_dbPepVar", "Select columns in dbPepVar to show:",
                                    names(dbPepVar), selected = names(dbPepVar)[c(1,2,4:11)]) 
             ),
             conditionalPanel(
-                'input.dataset === "BrCa"',
+                'input.tab === "BrCa"',
                 checkboxGroupInput("show_vars_BrCa", "Select columns in BrCa to show:",
                                    names(BrCa), selected = names(BrCa)[c(1,2,4:11)])
             ),
             conditionalPanel(
-                'input.dataset === "CrCa"',
+                'input.tab === "CrCa"',
                 checkboxGroupInput("show_vars_CrCa", "Select columns in CrCa to show:",
                                    names(CrCa), selected = names(CrCa)[c(1,2,4:11)])
             ),
             conditionalPanel(
-                'input.dataset === "OvCa"',
+                'input.tab === "OvCa"',
                 checkboxGroupInput("show_vars_OvCa", "Select columns in OvCa to show:",
                                    names(OvCa), selected = names(OvCa)[c(1,2,4:11)])
             ),
             conditionalPanel(
-                'input.dataset === "PrCa"',
+                'input.tab === "PrCa"',
                 checkboxGroupInput("show_vars_PrCa", "Select columns in PrCa to show:",
                                    names(PrCa), selected = names(PrCa)[c(1,2,4:11)])
             ),
@@ -120,7 +121,8 @@ ui <- fluidPage(
         ),
         mainPanel(
             tabsetPanel(
-                id = 'dataset',
+                id = 'tab',
+                tabPanel("Plots",  plotlyOutput('plot') ),
                 tabPanel("dbPepVar", DT::dataTableOutput("tb_dbPepVar")),
                 tabPanel("BrCa", DT::dataTableOutput("tb_BrCa")),
                 tabPanel("CrCa", DT::dataTableOutput("tb_CrCa")),
@@ -132,8 +134,27 @@ ui <- fluidPage(
     )
 )
 
-# Define server logic
+# Define server logic ----
 server <- function(input, output) {
+    
+    
+    x <- reactive({
+        mtcars[,input$xcol]
+    })
+    
+    y <- reactive({
+        mtcars[,input$ycol]
+    })
+    
+    
+    output$plot <- renderPlotly(
+        plot1 <- plot_ly(
+            x = x(),
+            y = y(), 
+            type = 'scatter',
+            mode = 'markers')
+    )
+    
 
     # B - Buttons
     # l - Length changing input control
