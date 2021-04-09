@@ -11,7 +11,7 @@ library(shiny)
 #if(!require(shinydashboard)){ install.packages('shinydashboard') }
 library(ggplot2)  # for the diamonds dataset
 if(!require(DT)){ install.packages('DT') }
-if(!require(plotly)){ install.packages('plotly') }
+#if(!require(plotly)){ devtools::install_github("ropensci/plotly")}
 
 # Functions
 img_uri <- function(x) { sprintf('<img src="%s"/>', knitr::image_uri(x)) }
@@ -82,16 +82,34 @@ ui <- fluidPage(
                                     type="image/x-icon"))
         ),
     headerPanel("dbPepVar"),
+    
+    fluidRow(
+        column(12, wellPanel(p("
+        The dbPepVar is a new proteogenomics database which combines genetic variation information from dbSNP with 
+        protein sequences from NCBI's RefSeq. We then perform a pan-cancer analysis (Ovarian, Colorectal, Breast and Prostate) 
+        using public mass spectrometry datasets to identify genetic variations and genes present in the analyzed samples. 
+        As results, were identified 5,449 variant peptides in ovarian, 2,722 in prostate, 2,392 in breast and 3,061 in colon cancer."),
+                               
+                             p("
+        Compared to other approaches, our database contains a greater diversity of variants, including missense, 
+        nonsense mutations, loss of termination codon, insertions, deletions (of any size), frameshifts and mutations that 
+        alter the start translation. Besides, for each protein, only the variant tryptic peptides derived from enzymatic cleavage 
+        (i.e., trypsin) are inserted, following the criteria of size, allelic frequency and affected regions of the protein. 
+        In our approach, MS data is submitted to the dbPepVar variant and reference base separately. The outputs are compared 
+        and filtered by the scores for each base. Using public MS data from four types of cancer, we mostly identified 
+        cancer-specific SNPs, but shared mutations were also present in a lower amount.                               
+        ")))
+    ),
 
     # Sidebar with a slider input for number of bins
     sidebarLayout(
         sidebarPanel(
-            conditionalPanel(
-                'input.tab === "Plots"',
-                selectInput('xcol','X Variable', names(mtcars)),
-                selectInput('ycol','Y Variable', names(mtcars)),
-                selected = names(mtcars)[[2]]
-            ),
+            # conditionalPanel(
+            #     'input.tab === "Plots"',
+            #     selectInput('xcol','X Variable', names(mtcars)),
+            #     selectInput('ycol','Y Variable', names(mtcars)),
+            #     selected = names(mtcars)[[2]]
+            # ),
             conditionalPanel(
                 'input.tab === "dbPepVar"',
                 checkboxGroupInput("show_vars_dbPepVar", "Select columns in dbPepVar to show:",
@@ -122,7 +140,7 @@ ui <- fluidPage(
         mainPanel(
             tabsetPanel(
                 id = 'tab',
-                tabPanel("Plots",  plotlyOutput('plot') ),
+                #tabPanel("Plots",  plotlyOutput('plot') ),
                 tabPanel("dbPepVar", DT::dataTableOutput("tb_dbPepVar")),
                 tabPanel("BrCa", DT::dataTableOutput("tb_BrCa")),
                 tabPanel("CrCa", DT::dataTableOutput("tb_CrCa")),
@@ -137,23 +155,23 @@ ui <- fluidPage(
 # Define server logic ----
 server <- function(input, output) {
     
+    # 
+    # x <- reactive({
+    #     mtcars[,input$xcol]
+    # })
+    # 
+    # y <- reactive({
+    #     mtcars[,input$ycol]
+    # })
     
-    x <- reactive({
-        mtcars[,input$xcol]
-    })
     
-    y <- reactive({
-        mtcars[,input$ycol]
-    })
-    
-    
-    output$plot <- renderPlotly(
-        plot1 <- plot_ly(
-            x = x(),
-            y = y(), 
-            type = 'scatter',
-            mode = 'markers')
-    )
+    # output$plot <- renderPlotly(
+    #     # plot1 <- plot_ly(
+    #     #     x = x(),
+    #     #     y = y(), 
+    #     #     type = 'scatter',
+    #     #     mode = 'markers')
+    # )
     
 
     # B - Buttons
