@@ -1,40 +1,7 @@
 ## Welcome to dbPepVar
 
-[Link](portal/index.html)
+The dbPepVar is a new proteogenomics database which combines genetic variation information from dbSNP with protein sequences from NCBI's RefSeq. We then perform a pan-cancer analysis (Ovarian, Colorectal, Breast and Prostate) using public mass spectrometry datasets to identify genetic variations and genes present in the analyzed samples. As results, were identified 5,449 variant peptides in ovarian (OvCa), 2,722 in prostate (PrCa), 2,392 in breast (BrCa) and 3,061 in colon-rectal cancer (CrCa).
 
+Compared to other approaches, our database contains a greater diversity of variants, including missense, nonsense mutations, loss of termination codon, insertions, deletions (of any size), frameshifts and mutations that alter the start translation. Besides, for each protein, only the variant tryptic peptides derived from enzymatic cleavage (i.e., trypsin) are inserted, following the criteria of size, allelic frequency and affected regions of the protein. In our approach, MS data is submitted to the dbPepVar variant and reference base separately. The outputs are compared and filtered by the scores for each base. Using public MS data from four types of cancer, we mostly identified cancer-specific SNPs, but shared mutations were also present in a lower amount.
 
-You can use the [editor on GitHub](https://github.com/terrematte/dbPepVar/edit/main/README.md) to maintain and preview the content for your website in Markdown files.
-
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
-
-### Markdown
-
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
-
-```markdown
-Syntax highlighted code block
-
-# Header 1
-## Header 2
-### Header 3
-
-- Bulleted
-- List
-
-1. Numbered
-2. List
-
-**Bold** and _Italic_ and `Code` text
-
-[Link](url) and ![Image](src)
-```
-
-For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
-
-### Jekyll Themes
-
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/terrematte/dbPepVar/settings). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
-
-### Support or Contact
-
-Having trouble with Pages? Check out our [documentation](https://docs.github.com/categories/github-pages-basics/) or [contact support](https://support.github.com/contact) and we’ll help you sort it out.
+The dbPepVar is available at: https://bioinfo.imd.ufrn.br/dbPepVar/.

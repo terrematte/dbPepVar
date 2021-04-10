@@ -1,13 +1,11 @@
 # TO DO
 
+* Add evidence.txt data.
 * ~~Check dbPepVarMismatch.~~  
 * ~~Add a select option for number of rows.~~  
 * ~~Allow regex~~ 
 * ~~Organizing order of columns to show.~~  
 
-* Check examples: 
-  * https://plotly-r.com/boxplots.html
-  
 * Add grid panels for plots:
   * Tables:
     * Number of Mutations per Genes (cols: Gene, #PTC, #Deleterius, Freq)
@@ -21,3 +19,7 @@
     * ~~Mutation Number of Variant_Classification~~
     * ~~Number of Samples per Cancer (or a Pie chart)~~
       
+* Check examples: 
+  * https://plotly-r.com/boxplots.html
+  * https://plotly.com/r/basic-charts/
+  
