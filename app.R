@@ -8,9 +8,9 @@
 #
 
 library(shiny)
-#if(!require(shinydashboard)){ install.packages('shinydashboard') }
 library(ggplot2)  # for the diamonds dataset
 if(!require(DT)){ install.packages('DT') }
+#if(!require(shinydashboard)){ install.packages('shinydashboard') }
 #if(!require(plotly)){ devtools::install_github("ropensci/plotly")}
 
 # Functions
