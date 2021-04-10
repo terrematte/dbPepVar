@@ -8,10 +8,13 @@
 #
 
 library(shiny)
+
+#if(!require(shinydashboard)){ install.packages('shinydashboard') }
 library(ggplot2)  # for the diamonds dataset
 if(!require(DT)){ install.packages('DT') }
-#if(!require(shinydashboard)){ install.packages('shinydashboard') }
-#if(!require(plotly)){ devtools::install_github("ropensci/plotly")}
+if(!require(dplyr)){ install.packages('dplyr') }
+if(!require(tidyr)){ install.packages('tidyr') }
+if(!require(plotly)){ install.packages('plotly') }
 
 # Functions
 img_uri <- function(x) { sprintf('<img src="%s"/>', knitr::image_uri(x)) }
@@ -51,13 +54,14 @@ dbPepVar <- dplyr::left_join(dbPepVar_snps, dbPepVar, by = by) %>%
         Protein_search = link_proteins(Refseq_protein),
         Pep = round(Pep, digits = 3),
         NMD_gene = ifelse(NMD, "TRUE", "FALSE"),
-        PTC_gene = ifelse(PTC == 1, "TRUE", "FALSE")) %>%
+        PTC_gene = ifelse(PTC == 1, "TRUE", "FALSE"),
+        Change =  gsub('[0-9]+', '>', gsub('p.', '', HGVSp))) %>%
     dplyr::rename(          
         Gene = "Hugo_Symbol",
         Sample = "Tumor_Sample_Barcode.x",
         Others_Samples = "Tumor_Sample_Barcode.y") %>%
     dplyr::select(c("Cancer_Type", "Sample", "Others_Samples", "Gene", "GeneCards",  "Refseq_protein", "Protein_search",
-                    "snp_id", "SNP_search", "Variant_Classification", "HGVSp", "i_transcript_name", "Chromosome", "Start_Position", "End_Position", "band", 
+                    "snp_id", "SNP_search", "Variant_Classification", "HGVSp", "Change", "i_transcript_name", "Chromosome", "Start_Position", "End_Position", "band", 
                     "NMD_gene", "Peptide", "PTC_gene", "Score", "Pep", "Size_Ref", "Size_Mut", "Pos_Mut", "Rate_Size_Prot", "Rate_Pos_Mut")) %>%
     dplyr::mutate_if(is.factor, as.character)  %>%
     dplyr::mutate_at(vars("Variant_Classification", "Cancer_Type", "Chromosome"), as.factor) 
@@ -73,14 +77,14 @@ PrCa <- dbPepVar[dbPepVar$Cancer_Type =="PrCa", ]
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
-     
+    
     # Application title
     titlePanel(
         windowTitle = "dbPepVar",
         title = tags$head(tags$link(rel="icon", 
                                     href=img_uri_favicon("icons/favicon.png"),
                                     type="image/x-icon"))
-        ),
+    ),
     headerPanel("dbPepVar"),
     
     fluidRow(
@@ -88,8 +92,8 @@ ui <- fluidPage(
         The dbPepVar is a new proteogenomics database which combines genetic variation information from dbSNP with 
         protein sequences from NCBI's RefSeq. We then perform a pan-cancer analysis (Ovarian, Colorectal, Breast and Prostate) 
         using public mass spectrometry datasets to identify genetic variations and genes present in the analyzed samples. 
-        As results, were identified 5,449 variant peptides in ovarian, 2,722 in prostate, 2,392 in breast and 3,061 in colon cancer."),
-                               
+        As results, were identified 5,449 variant peptides in ovarian (OvCa), 2,722 in prostate (PrCa), 2,392 in breast (BrCa) and 3,061 in colon-rectal cancer (CrCa)."),
+                             
                              p("
         Compared to other approaches, our database contains a greater diversity of variants, including missense, 
         nonsense mutations, loss of termination codon, insertions, deletions (of any size), frameshifts and mutations that 
@@ -100,16 +104,81 @@ ui <- fluidPage(
         cancer-specific SNPs, but shared mutations were also present in a lower amount.                               
         ")))
     ),
-
+    fluidRow(
+        column(4,
+               plotlyOutput("fig.pieCancerSamples")
+        ),
+        column(4,
+               plotlyOutput("fig.pieCancer")
+        ),
+        column(4,
+               plotlyOutput("fig.pieVarClassif")
+        )
+    ),
+    fluidRow(
+        column(12, wellPanel(c("Mutated Genes by Samples")))
+    ),
+    fluidRow(
+        column(8, 
+               plotlyOutput("fig.barGeneSamples")
+        ),
+        column(4, 
+               DT::dataTableOutput("tb_data_GeneSamples")
+        ),
+    ),
+    fluidRow(
+        column(12, wellPanel(c("Mutated Genes of unique SNPs identified from Peptides")))
+    ),
+    fluidRow(
+        column(8, 
+               plotlyOutput("fig.barGene")
+        ),
+        column(4, 
+               DT::dataTableOutput("tb_data_Gene")
+        ),
+    ),
+    fluidRow(
+        column(12, wellPanel(c("Protein Changes by Samples")))
+    ),
+    fluidRow(
+        column(8, 
+               plotlyOutput("fig.barChangeSamples")
+        ),
+        column(4, 
+               DT::dataTableOutput("tb_data_ChangeSamples")
+        ),
+    ),
+    fluidRow(
+        column(12, wellPanel(c("Protein Changes of unique SNPs identified from Peptides")))
+    ),
+    fluidRow(
+        column(8, 
+               plotlyOutput("fig.barChange")
+        ),
+        column(4, 
+               DT::dataTableOutput("tb_data_Change")
+        ),
+    ),
+    fluidRow(
+        column(12, wellPanel(c("Mutations by Chromosome")))
+    ),
+    fluidRow(
+        column(12, 
+               plotlyOutput("fig.barChromosome")
+        )
+    ),
+    fluidRow(
+        column(12, wellPanel(c(" dbPepVar with SNPs per Sampĺes. ")))
+    ),
     # Sidebar with a slider input for number of bins
     sidebarLayout(
         sidebarPanel(
-            # conditionalPanel(
-            #     'input.tab === "Plots"',
-            #     selectInput('xcol','X Variable', names(mtcars)),
-            #     selectInput('ycol','Y Variable', names(mtcars)),
-            #     selected = names(mtcars)[[2]]
-            # ),
+            conditionalPanel(
+                'input.tab === "Plots"',
+                selectInput('xcol','X Variable', names(mtcars)),
+                selectInput('ycol','Y Variable', names(mtcars)),
+                selected = names(mtcars)[[2]]
+            ),
             conditionalPanel(
                 'input.tab === "dbPepVar"',
                 checkboxGroupInput("show_vars_dbPepVar", "Select columns in dbPepVar to show:",
@@ -173,7 +242,169 @@ server <- function(input, output) {
     #     #     mode = 'markers')
     # )
     
-
+    
+    data <- dbPepVar %>% 
+        dplyr::select(c("Cancer_Type", "Gene", "Variant_Classification", "Refseq_protein",  "snp_id", "HGVSp", "Change", "Chromosome"))  %>% 
+        unique() 
+    
+    
+    dataChromosome <- dbPepVar %>% 
+        count(Cancer_Type, Chromosome) %>% 
+        tidyr::pivot_wider( names_from = "Cancer_Type", values_from = n)
+    
+    ChangeTopSamples <- dbPepVar %>% 
+        group_by(Change) %>% 
+        count() %>% 
+        arrange(desc(n)) %>% 
+        head(.,20) %>% 
+        dplyr::select(Change) %>%
+        pull(.)
+    
+    data_ChangeSamples <- dbPepVar %>% 
+        group_by(Change, Cancer_Type) %>% 
+        count()  %>% 
+        dplyr::filter(Change %in% ChangeTopSamples) %>% 
+        tidyr::pivot_wider( names_from = "Cancer_Type", values_from = n)
+    
+    ChangeTop <- data %>% 
+        group_by(Change) %>% 
+        count() %>% 
+        arrange(desc(n)) %>% 
+        head(.,20) %>% 
+        dplyr::select(Change) %>%
+        pull(.)
+    
+    data_Change <- data %>% 
+        group_by(Change, Cancer_Type) %>% 
+        count()  %>% 
+        dplyr::filter(Change %in% ChangeTop) %>% 
+        pivot_wider( names_from = "Cancer_Type", values_from = n)
+    
+    GeneTopSamples <- dbPepVar %>% 
+        group_by(Gene) %>% 
+        count() %>% 
+        arrange(desc(n)) %>% 
+        head(.,20) %>% 
+        dplyr::select(Gene) %>%
+        pull(.)
+    
+    data_GeneSamples <- dbPepVar %>% 
+        group_by(Gene, Cancer_Type) %>% 
+        count()  %>% 
+        dplyr::filter(Gene %in% GeneTopSamples) %>% 
+        pivot_wider(names_from = "Cancer_Type", values_from = n)
+    
+    GeneTop <- data %>% 
+        group_by(Gene) %>% 
+        count() %>% 
+        arrange(desc(n)) %>% 
+        head(.,20) %>% 
+        dplyr::select(Gene) %>%
+        pull(.)
+    
+    data_Gene <- data %>% 
+        group_by(Gene, Cancer_Type) %>% 
+        count()  %>% 
+        dplyr::filter(Gene %in% GeneTop) %>% 
+        pivot_wider( names_from = "Cancer_Type", values_from = n)
+    
+    
+    # Pie chart of Samples by Cancer Type  ----
+    output$fig.pieCancerSamples <- renderPlotly({
+        p <- plot_ly() %>% 
+            add_pie(data = count(dbPepVar, Cancer_Type, Sample) %>% count(Cancer_Type) , labels = ~Cancer_Type, values = ~n,
+                    hole = 0, name = "Cancer_Type", rotation = 180,
+                    textinfo='label+percent', insidetextorientation='radial') %>% 
+            layout(title = "#Samples by Cancer Type", showlegend = T,
+                   xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+                   yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
+        
+        t <- list(size = 10)
+        p %>% layout(font=t)
+    })
+    
+    # Pie chart of Cancer_Type of Unique SNPs  ----
+    output$fig.pieCancer <- renderPlotly({
+        p <- plot_ly() %>% 
+            add_pie(data = count(data, Cancer_Type), labels = ~Cancer_Type, values = ~n, 
+                    hole = 0, name = "Cancer_Type", textinfo='label+percent', insidetextorientation='radial') %>% 
+            layout(title = "#Unique SNPs by Cancer Type", showlegend = T,
+                   xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+                   yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
+        t <- list(size = 10)
+        p %>% layout(font=t)
+    })
+    
+    # Pie chart of Variant_Classification of Unique SNPs  ----
+    output$fig.pieVarClassif <- renderPlotly({
+        p <- plot_ly() %>% 
+            add_pie(data = count(data, Variant_Classification), labels = ~Variant_Classification, values = ~n,
+                    hole = 0, name = "Variant_Classification", rotation = 180,
+                    textinfo='label+percent', insidetextorientation='radial') %>% 
+            #add_trace(y = .Variant_Classification, name = "Missense_Mutation", visible = "legendonly") %>% 
+            layout(title = "#Unique SNPs by Variant Classification", showlegend = T,
+                   xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+                   yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
+        
+        t <- list(size = 10)
+        p %>% layout(font=t, margin = list(t = 50, b = 70, l = 70, r = 100))
+    })
+    
+    # Bar plots Genes by Samples ----
+    output$fig.barGeneSamples <- renderPlotly({
+        plot_ly(data_GeneSamples, x = ~Gene, y = ~BrCa, type = 'bar', name = 'BrCa') %>% 
+            add_trace(y = ~CrCa, name = 'CrCa') %>% 
+            add_trace(y = ~OvCa, name = 'OvCa') %>% 
+            add_trace(y = ~PrCa, name = 'PrCa')  %>% 
+            layout(yaxis = list(title = 'Count by Samples'), 
+                   xaxis = list(title = "Gene", tickangle = -45, categoryorder = "array", categoryarray = GeneTopSamples), 
+                   barmode = 'group')
+    })
+    
+    # Bar plots Genes by Cancer ----
+    output$fig.barGene <- renderPlotly({
+        plot_ly(data_Gene, x = ~Gene, y = ~BrCa, type = 'bar', name = 'BrCa') %>% 
+            add_trace(y = ~CrCa, name = 'CrCa') %>% 
+            add_trace(y = ~OvCa, name = 'OvCa') %>% 
+            add_trace(y = ~PrCa, name = 'PrCa')  %>% 
+            layout(yaxis = list(title = 'Count per unique SNP'), 
+                   xaxis = list(title = "Gene", tickangle = -45, categoryorder = "array", categoryarray = GeneTop), 
+                   barmode = 'group')
+    })
+    
+    # Bar plot of Protein Change  by Samples  ----
+    output$fig.barChangeSamples <- renderPlotly({
+        plot_ly(data_ChangeSamples, x = ~Change, y = ~BrCa, type = 'bar', name = 'BrCa') %>% 
+            add_trace(y = ~CrCa, name = 'CrCa') %>% 
+            add_trace(y = ~OvCa, name = 'OvCa') %>% 
+            add_trace(y = ~PrCa, name = 'PrCa')  %>% 
+            layout(yaxis = list(title = 'Count by Samples'), 
+                   xaxis = list(title = "Gene", tickangle = -45, categoryorder = "array", categoryarray = ChangeTopSamples),
+                   barmode = 'group')
+    })
+    
+    # Bar plot of Protein Change per SNP by Cancer ----
+    output$fig.barChange <- renderPlotly({
+        plot_ly(data_Change, x = ~Change, y = ~BrCa, type = 'bar', name = 'BrCa') %>% 
+            add_trace(y = ~CrCa, name = 'CrCa') %>% 
+            add_trace(y = ~OvCa, name = 'OvCa') %>% 
+            add_trace(y = ~PrCa, name = 'PrCa')  %>% 
+            layout(yaxis = list(title = 'Count per unique SNP'), 
+                   xaxis = list(title = "Gene", tickangle = -45, categoryorder = "array", categoryarray = ChangeTop),
+                   barmode = 'group')
+    })
+    
+    # Bar plot of mutation on Chromosome by Cancer Samples ----
+    output$fig.barChromosome <- renderPlotly({
+        plot_ly(dataChromosome, x = ~Chromosome, y = ~BrCa, type = 'bar', name = 'BrCa') %>% 
+            add_trace(y = ~CrCa, name = 'CrCa') %>% 
+            add_trace(y = ~OvCa, name = 'OvCa') %>% 
+            add_trace(y = ~PrCa, name = 'PrCa')  %>% 
+            layout(yaxis = list(title = 'Count by Samples'), 
+                   xaxis = list(title = "Gene", tickangle = -45, ategoryorder = "array", categoryarray = paste0(c(0:22, "X","Y"))),
+                   barmode = 'group')
+    })
+    
     # B - Buttons
     # l - Length changing input control
     # f - Filtering input
@@ -181,7 +412,7 @@ server <- function(input, output) {
     # t - Table
     # i - Table information summary
     # p - Pagination control
-    
+    # General options for all tables ----
     list.options <- list(
         pageLength = 10,
         lengthMenu = c(10, 25, 50, 100),
@@ -193,20 +424,89 @@ server <- function(input, output) {
         #dom = 'lBfrtip',
         buttons =
             list(
-                 list(extend = 'pdf',
-                      text = img_uri_icon('icons/pdf_icon.png'),
-                      pageSize = 'A4',
-                      orientation = 'landscape',
-                      filename = 'dbPepVar'
-                 ),
-                 list(extend = 'csv',
-                      text = '<span class="glyphicon glyphicon-download-alt"></span>',
-                      filename = 'dbPepVar'
-                 )
+                list(extend = 'pdf',
+                     text = img_uri_icon('icons/pdf_icon.png'),
+                     pageSize = 'A4',
+                     orientation = 'landscape',
+                     filename = 'dbPepVar'
+                ),
+                list(extend = 'csv',
+                     text = '<span class="glyphicon glyphicon-download-alt"></span>',
+                     filename = 'dbPepVar'
+                )
             )
     )
     
-    # dbPepVar
+    
+    # table of Protein Change by SNPs ----
+    output$tb_data_ChangeSamples <- DT::renderDataTable({
+        DT::datatable(
+            dbPepVar %>% 
+                group_by(Cancer_Type, Change) %>% 
+                count() %>% arrange(desc(n)),
+            class = 'cell-border stripe',
+            filter = 'top',
+            rownames = FALSE,
+            options = list(
+                pageLength = 5,
+                dom = 'tip',
+                search = list(regex = TRUE),
+                searchHighlight = TRUE),
+            escape=FALSE)
+    })
+    
+    # table of Protein Change by SNPs ----
+    output$tb_data_Change <- DT::renderDataTable({
+        DT::datatable(
+            data %>% 
+                group_by(Cancer_Type, Change) %>% 
+                count() %>% arrange(desc(n)),
+            class = 'cell-border stripe',
+            filter = 'top',
+            rownames = FALSE,
+            options = list(
+                pageLength = 5,
+                dom = 'tip',
+                search = list(regex = TRUE),
+                searchHighlight = TRUE),
+            escape=FALSE)
+    })
+    
+    # table of Gene by SNPs ----
+    output$tb_data_Gene <- DT::renderDataTable({
+        DT::datatable(
+            data %>% 
+                group_by(Cancer_Type, Gene) %>% 
+                count() %>% arrange(desc(n)),
+            class = 'cell-border stripe',
+            filter = 'top',
+            rownames = FALSE,
+            options = list(
+                pageLength = 5,
+                dom = 'tip',
+                search = list(regex = TRUE),
+                searchHighlight = TRUE),
+            escape=FALSE)
+    })
+    
+    # table of Gene by Samples ----
+    output$tb_data_GeneSamples <- DT::renderDataTable({
+        DT::datatable(
+            dbPepVar %>% 
+                group_by(Cancer_Type, Gene) %>% 
+                count() %>% arrange(desc(n)),
+            class = 'cell-border stripe',
+            filter = 'top',
+            rownames = FALSE,
+            options = list(
+                pageLength = 5,
+                dom = 'tip',
+                search = list(regex = TRUE),
+                searchHighlight = TRUE),
+            escape=FALSE)
+    })
+    
+    # dbPepVar ----
     output$tb_dbPepVar <- DT::renderDataTable({
         DT::datatable(
             dbPepVar[, input$show_vars_dbPepVar, drop = FALSE],
@@ -218,7 +518,7 @@ server <- function(input, output) {
             escape=FALSE)
         
     })
-
+    
     # BrCa
     output$tb_BrCa <- DT::renderDataTable({
         DT::datatable(
@@ -229,9 +529,9 @@ server <- function(input, output) {
             extensions = c('Buttons', "ColReorder"),
             options = list.options,  
             escape=FALSE
-            )
+        )
     })
-
+    
     # CrCa
     output$tb_CrCa <- DT::renderDataTable({
         DT::datatable(
@@ -242,9 +542,9 @@ server <- function(input, output) {
             extensions = c('Buttons', "ColReorder"),
             options = list.options,  
             escape=FALSE
-            )
+        )
     })
-
+    
     # OvCa
     output$tb_OvCa <- DT::renderDataTable({
         DT::datatable(
@@ -257,7 +557,7 @@ server <- function(input, output) {
             escape=FALSE
         )
     })
-
+    
     output$tb_PrCa <- DT::renderDataTable({
         DT::datatable(
             PrCa[, input$show_vars_PrCa, drop = FALSE],
@@ -267,7 +567,7 @@ server <- function(input, output) {
             extensions = c('Buttons', "ColReorder"),
             options = list.options,  
             escape=FALSE
-            )
+        )
     })
 }
 
