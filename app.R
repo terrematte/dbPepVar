@@ -116,7 +116,7 @@ ui <- fluidPage(
         )
     ),
     fluidRow(
-        column(12, wellPanel(c("Mutated Genes by Samples")))
+        column(12, wellPanel(c("Mutated Genes of Samples by Cancer")))
     ),
     fluidRow(
         column(8, 
@@ -138,7 +138,7 @@ ui <- fluidPage(
         ),
     ),
     fluidRow(
-        column(12, wellPanel(c("Protein Changes by Samples")))
+        column(12, wellPanel(c("Protein Changes of Samples by Cancer")))
     ),
     fluidRow(
         column(8, 
@@ -160,7 +160,7 @@ ui <- fluidPage(
         ),
     ),
     fluidRow(
-        column(12, wellPanel(c("Mutations by Chromosome")))
+        column(12, wellPanel(c("Mutations of Samples per Chromosome by Cancer")))
     ),
     fluidRow(
         column(12, 
@@ -168,7 +168,7 @@ ui <- fluidPage(
         )
     ),
     fluidRow(
-        column(12, wellPanel(c(" dbPepVar with SNPs per Sampĺes. ")))
+        column(12, wellPanel(c("Complete dbPepVar with SNPs per Sampĺes. ")))
     ),
     # Sidebar with a slider input for number of bins
     sidebarLayout(
