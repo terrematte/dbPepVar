@@ -7,9 +7,8 @@
 #    http://shiny.rstudio.com/
 #
 
+# ==== Loading library ===============================================================
 library(shiny)
-
-#if(!require(shinydashboard)){ install.packages('shinydashboard') }
 library(ggplot2)  # for the diamonds dataset
 if(!require(DT)){ install.packages('DT') }
 if(!require(dplyr)){ install.packages('dplyr') }
@@ -17,11 +16,10 @@ if(!require(tidyr)){ install.packages('tidyr') }
 if(!require(vroom)){ install.packages('vroom') }
 if(!require(plotly)){ install.packages('plotly') }
 
-# Functions
+# ==== Global Functions ===============================================================
 img_uri <- function(x) { sprintf('<img src="%s"/>', knitr::image_uri(x)) }
 img_uri_icon <- function(x) { sprintf('<img src="%s" width="18" height="18"/>', knitr::image_uri(x)) }
 img_uri_favicon <- function(x) { sprintf('%s', knitr::image_uri(x)) }
-
 
 link_genecards <- function(val) {
     sprintf('<a href="https://www.genecards.org/cgi-bin/carddisp.pl?gene=%s#publications" target="_blank"><img src="%s"  width="90" height="20"/></a>', val,  knitr::image_uri("icons/genecards.png"))
@@ -35,7 +33,7 @@ link_proteins <- function(val) {
     sprintf('<a href="https://www.ncbi.nlm.nih.gov/protein/%s" target="_blank"><img src="%s"  height="18"/></a>', val,  knitr::image_uri("icons/logo_ncbi.gif"))
 }
 
-# Load data
+# ==== Global variables ===============================================================
 load("data/dbPepVar_snps.Rda")
 
 dbPepVar_snps <- dbPepVar_snps %>%
@@ -46,12 +44,13 @@ f <-  "data/dbPepVar_PTC_Peptides.tsv"
 dbPepVar <- vroom(f)  %>%
     dplyr::select(-c("Gene","Variant_Classification"))
 
-# # Load evidence dataBrCa <-  vroom("data/evidence_dbPepVar.BrCa.txt")
+# ==== Load variables ===============================================================
+BrCa <-  vroom("data/evidence_dbPepVar.BrCa.txt")
 CrCa <-  vroom("data/evidence_dbPepVar.CrCa.txt")
 OvCa <-  vroom("data/evidence_dbPepVar.OvCa.txt")
 PrCa <-  vroom("data/evidence_dbPepVar.PrCa.txt")
 
- 
+
 # Merge data
 by <- c("Cancer_Type", "Refseq_protein", "snp_id")
 dbPepVar <- dplyr::left_join(dbPepVar_snps, dbPepVar, by = by) %>%
@@ -76,7 +75,7 @@ dbPepVar <- dplyr::left_join(dbPepVar_snps, dbPepVar, by = by) %>%
 rm(dbPepVar_snps,by, link_genecards, link_proteins, link_snps, f)
 
 
-# Define UI for application that draws a histogram
+# ==== ui.R ===============================================================
 ui <- fluidPage(
     
     # Application title
@@ -183,12 +182,12 @@ ui <- fluidPage(
     # Sidebar with a slider input for number of bins
     sidebarLayout(
         sidebarPanel(
-            conditionalPanel(
-                'input.tab === "Plots"',
-                selectInput('xcol','X Variable', names(mtcars)),
-                selectInput('ycol','Y Variable', names(mtcars)),
-                selected = names(mtcars)[[2]]
-            ),
+            # conditionalPanel(
+            #     'input.tab === "Plots"',
+            #     selectInput('xcol','X Variable', names(mtcars)),
+            #     selectInput('ycol','Y Variable', names(mtcars)),
+            #     selected = names(mtcars)[[2]]
+            # ),
             conditionalPanel(
                 'input.tab === "dbPepVar"',
                 checkboxGroupInput("show_vars_dbPepVar", "Select columns in dbPepVar to show:",
@@ -231,10 +230,10 @@ ui <- fluidPage(
     )
 )
 
-# Define server logic ----
+# ==== server.R ===============================================================
 server <- function(input, output) {
     
-    # 
+
     # x <- reactive({
     #     mtcars[,input$xcol]
     # })
@@ -242,26 +241,25 @@ server <- function(input, output) {
     # y <- reactive({
     #     mtcars[,input$ycol]
     # })
-    
-    
+    # 
+    # 
     # output$plot <- renderPlotly(
     #     # plot1 <- plot_ly(
     #     #     x = x(),
-    #     #     y = y(), 
+    #     #     y = y(),
     #     #     type = 'scatter',
     #     #     mode = 'markers')
     # )
-    
-    
+
     data <- dbPepVar %>% 
         dplyr::select(c("Cancer_Type", "Gene", "Variant_Classification", "Refseq_protein",  "snp_id", "HGVSp", "Change", "Chromosome"))  %>% 
         unique() 
     
-    dataSequenceCancer <- cbind("Cancer_Type" = c("BrCa", "CrCa", "OvCa", "PrCa"),
-          combine(count(BrCa, Sequence) %>% count(), 
-                  count(CrCa, Sequence) %>% count(), 
-                  count(OvCa, Sequence) %>% count(),
-                  count(PrCa, Sequence) %>% count()))
+    dataSequenceCancer <- cbind(Cancer_Type = c("BrCa", "CrCa", "OvCa", "PrCa"),
+                                combine(count(BrCa, Sequence) %>% count(), 
+                                        count(CrCa, Sequence) %>% count(), 
+                                        count(OvCa, Sequence) %>% count(),
+                                        count(PrCa, Sequence) %>% count()))
     
     dataSNPCancer_Type <- count(data, Cancer_Type) %>%
         mutate(Cancer_Type = as.factor(Cancer_Type)) 
@@ -559,7 +557,7 @@ server <- function(input, output) {
         
     })
     
-    # BrCa
+    # BrCa ----
     output$tb_BrCa <- DT::renderDataTable({
         DT::datatable(
             BrCa[, input$show_vars_BrCa, drop = FALSE],
@@ -572,7 +570,7 @@ server <- function(input, output) {
         )
     })
     
-    # CrCa
+    # CrCa ----
     output$tb_CrCa <- DT::renderDataTable({
         DT::datatable(
             CrCa[, input$show_vars_CrCa, drop = FALSE],
@@ -585,7 +583,7 @@ server <- function(input, output) {
         )
     })
     
-    # OvCa
+    # OvCa ----
     output$tb_OvCa <- DT::renderDataTable({
         DT::datatable(
             OvCa[, input$show_vars_OvCa, drop = FALSE],
@@ -598,6 +596,7 @@ server <- function(input, output) {
         )
     })
     
+    # PrCa ----
     output$tb_PrCa <- DT::renderDataTable({
         DT::datatable(
             PrCa[, input$show_vars_PrCa, drop = FALSE],
