@@ -1,14 +1,13 @@
 # TO DO
 
-* Add evidence.txt data.
+* ~~Add evidence.txt data.~~
 * ~~Check dbPepVarMismatch.~~  
 * ~~Add a select option for number of rows.~~  
 * ~~Allow regex~~ 
 * ~~Organizing order of columns to show.~~  
 
-* Add grid panels for plots:
-  * Tables:
-    * Number of Mutations per Genes (cols: Gene, #PTC, #Deleterius, Freq)
+* ~~Add grid panels for plots:~~
+  * ~~Tables:~~
     * ~~Number of Mutations per Samples~~
   * Bar plots: 
     * ~~Number of Mutations per Cancer~~

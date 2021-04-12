@@ -14,6 +14,7 @@ library(ggplot2)  # for the diamonds dataset
 if(!require(DT)){ install.packages('DT') }
 if(!require(dplyr)){ install.packages('dplyr') }
 if(!require(tidyr)){ install.packages('tidyr') }
+if(!require(vroom)){ install.packages('vroom') }
 if(!require(plotly)){ install.packages('plotly') }
 
 # Functions
@@ -42,11 +43,17 @@ dbPepVar_snps <- dbPepVar_snps %>%
                     "HGVSp", "snp_id",  "Chromosome", "Start_Position", "End_Position", "band", "i_transcript_name", "NMD"))
 
 f <-  "data/dbPepVar_PTC_Peptides.tsv"
-dbPepVar <- read.table(f, header = T, sep="\t", stringsAsFactors=F, quote='"')  %>%
+dbPepVar <- vroom(f)  %>%
     dplyr::select(-c("Gene","Variant_Classification"))
 
-by <- c("Cancer_Type", "Refseq_protein", "snp_id")
+# # Load evidence dataBrCa <-  vroom("data/evidence_dbPepVar.BrCa.txt")
+CrCa <-  vroom("data/evidence_dbPepVar.CrCa.txt")
+OvCa <-  vroom("data/evidence_dbPepVar.OvCa.txt")
+PrCa <-  vroom("data/evidence_dbPepVar.PrCa.txt")
 
+ 
+# Merge data
+by <- c("Cancer_Type", "Refseq_protein", "snp_id")
 dbPepVar <- dplyr::left_join(dbPepVar_snps, dbPepVar, by = by) %>%
     dplyr::mutate(
         GeneCards = link_genecards(Hugo_Symbol),
@@ -67,12 +74,6 @@ dbPepVar <- dplyr::left_join(dbPepVar_snps, dbPepVar, by = by) %>%
     dplyr::mutate_at(vars("Variant_Classification", "Cancer_Type", "Chromosome"), as.factor) 
 
 rm(dbPepVar_snps,by, link_genecards, link_proteins, link_snps, f)
-
-BrCa <- dbPepVar[dbPepVar$Cancer_Type =="BrCa", ]
-CrCa <- dbPepVar[dbPepVar$Cancer_Type =="CrCa", ]
-OvCa <- dbPepVar[dbPepVar$Cancer_Type =="OvCa", ]
-PrCa <- dbPepVar[dbPepVar$Cancer_Type =="PrCa", ]
-
 
 
 # Define UI for application that draws a histogram
@@ -102,16 +103,25 @@ ui <- fluidPage(
         In our approach, MS data is submitted to the dbPepVar variant and reference base separately. The outputs are compared 
         and filtered by the scores for each base. Using public MS data from four types of cancer, we mostly identified 
         cancer-specific SNPs, but shared mutations were also present in a lower amount.                               
-        ")))
+        "),
+                             icon("cog", lib = "glyphicon"), 
+                             em( "
+        Click on legends of plots to activate or deactivate labels. Use ",  
+                                 a("regex", href="cheatsheets_regex.pdf", target="_blank"), 
+                                 " to search in datatables."
+        )))
     ),
     fluidRow(
-        column(4,
-               plotlyOutput("fig.pieCancerSamples")
+        column(3,
+               plotlyOutput("fig.barCancerSamples")
         ),
-        column(4,
-               plotlyOutput("fig.pieCancer")
+        column(3,
+               plotlyOutput("fig.barSequenceCancer")
         ),
-        column(4,
+        column(3,
+               plotlyOutput("fig.pieSNPCancer")
+        ),
+        column(3,
                plotlyOutput("fig.pieVarClassif")
         )
     ),
@@ -185,24 +195,24 @@ ui <- fluidPage(
                                    names(dbPepVar), selected = names(dbPepVar)[c(1,2,4:11)]) 
             ),
             conditionalPanel(
-                'input.tab === "BrCa"',
-                checkboxGroupInput("show_vars_BrCa", "Select columns in BrCa to show:",
-                                   names(BrCa), selected = names(BrCa)[c(1,2,4:11)])
+                'input.tab === "BrCa evidence"',
+                checkboxGroupInput("show_vars_BrCa", "Select columns in BrCa evidence to show:",
+                                   names(BrCa), selected = names(BrCa)[c(1:4)])
             ),
             conditionalPanel(
-                'input.tab === "CrCa"',
-                checkboxGroupInput("show_vars_CrCa", "Select columns in CrCa to show:",
-                                   names(CrCa), selected = names(CrCa)[c(1,2,4:11)])
+                'input.tab === "CrCa evidence"',
+                checkboxGroupInput("show_vars_CrCa", "Select columns in CrCa evidence to show:",
+                                   names(CrCa), selected = names(CrCa)[c(1:4)])
             ),
             conditionalPanel(
-                'input.tab === "OvCa"',
-                checkboxGroupInput("show_vars_OvCa", "Select columns in OvCa to show:",
-                                   names(OvCa), selected = names(OvCa)[c(1,2,4:11)])
+                'input.tab === "OvCa evidence"',
+                checkboxGroupInput("show_vars_OvCa", "Select columns in OvCa evidence to show:",
+                                   names(OvCa), selected = names(OvCa)[c(1:4)])
             ),
             conditionalPanel(
-                'input.tab === "PrCa"',
-                checkboxGroupInput("show_vars_PrCa", "Select columns in PrCa to show:",
-                                   names(PrCa), selected = names(PrCa)[c(1,2,4:11)])
+                'input.tab === "PrCa evidence"',
+                checkboxGroupInput("show_vars_PrCa", "Select columns in PrCa evidence to show:",
+                                   names(PrCa), selected = names(PrCa)[c(1:4)])
             ),
             width = 3
         ),
@@ -211,10 +221,10 @@ ui <- fluidPage(
                 id = 'tab',
                 #tabPanel("Plots",  plotlyOutput('plot') ),
                 tabPanel("dbPepVar", DT::dataTableOutput("tb_dbPepVar")),
-                tabPanel("BrCa", DT::dataTableOutput("tb_BrCa")),
-                tabPanel("CrCa", DT::dataTableOutput("tb_CrCa")),
-                tabPanel("OvCa", DT::dataTableOutput("tb_OvCa")),
-                tabPanel("PrCa", DT::dataTableOutput("tb_PrCa"))
+                tabPanel("BrCa evidence", DT::dataTableOutput("tb_BrCa")),
+                tabPanel("CrCa evidence", DT::dataTableOutput("tb_CrCa")),
+                tabPanel("OvCa evidence", DT::dataTableOutput("tb_OvCa")),
+                tabPanel("PrCa evidence", DT::dataTableOutput("tb_PrCa"))
             ),
             width = 9
         )
@@ -247,6 +257,14 @@ server <- function(input, output) {
         dplyr::select(c("Cancer_Type", "Gene", "Variant_Classification", "Refseq_protein",  "snp_id", "HGVSp", "Change", "Chromosome"))  %>% 
         unique() 
     
+    dataSequenceCancer <- cbind("Cancer_Type" = c("BrCa", "CrCa", "OvCa", "PrCa"),
+          combine(count(BrCa, Sequence) %>% count(), 
+                  count(CrCa, Sequence) %>% count(), 
+                  count(OvCa, Sequence) %>% count(),
+                  count(PrCa, Sequence) %>% count()))
+    
+    dataSNPCancer_Type <- count(data, Cancer_Type) %>%
+        mutate(Cancer_Type = as.factor(Cancer_Type)) 
     
     dataChromosome <- dbPepVar %>% 
         count(Cancer_Type, Chromosome) %>% 
@@ -308,26 +326,48 @@ server <- function(input, output) {
         dplyr::filter(Gene %in% GeneTop) %>% 
         pivot_wider( names_from = "Cancer_Type", values_from = n)
     
-    
-    # Pie chart of Samples by Cancer Type  ----
-    output$fig.pieCancerSamples <- renderPlotly({
-        p <- plot_ly() %>% 
-            add_pie(data = count(dbPepVar, Cancer_Type, Sample) %>% count(Cancer_Type) , labels = ~Cancer_Type, values = ~n,
-                    hole = 0, name = "Cancer_Type", rotation = 180,
-                    textinfo='label+percent', insidetextorientation='radial') %>% 
-            layout(title = "#Samples by Cancer Type", showlegend = T,
-                   xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
-                   yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
+    # Bar plot of Samples by Cancer Type  ----
+    output$fig.barCancerSamples <- renderPlotly({
+        p <- plot_ly(data = count(dbPepVar, Cancer_Type, Sample) %>% count(Cancer_Type) , x = ~Cancer_Type, y = ~n, type = 'bar',
+                     text = ~n, textposition = 'auto',
+                     marker = list(color = c('rgba(31, 119, 180, 1)', 'rgba(255, 127, 14, 1)',
+                                             'rgba(44, 160, 44, 1)', 'rgba(214, 39, 40, 1)'))) %>%
+        layout(yaxis = list(title = '#Samples by Cancer Type'), 
+               xaxis = list(title = "Cancer_Type", tickangle = -45))
         
         t <- list(size = 10)
         p %>% layout(font=t)
     })
+
+    # Pie chart of Cancer_Type of Unique Sequence  ----
+    output$fig.barSequenceCancer <- renderPlotly({
+        p <- plot_ly(data = dataSequenceCancer, x = ~Cancer_Type, y = ~n, type = 'bar',
+                     text = ~n, textposition = 'auto',
+                     marker = list(color = c('rgba(31, 119, 180, 1)', 'rgba(255, 127, 14, 1)',
+                                             'rgba(44, 160, 44, 1)', 'rgba(214, 39, 40, 1)'))) %>% 
+            layout(yaxis = list(title = '#Sequence by Cancer Type'), 
+                   xaxis = list(title = "Cancer_Type", tickangle = -45))
+        t <- list(size = 10)
+        p %>% layout(font=t)
+    })
+    
+    # # Pie chart of Cancer_Type of Unique Sequence  ----
+    # output$fig.pieSequenceCancer <- renderPlotly({
+    #     p <- plot_ly() %>% 
+    #         add_pie(data = dataSequenceCancer, labels = ~Cancer_Type, values = ~n, 
+    #                 hole = 0, name = "Cancer_Type", textinfo='label+percent', insidetextorientation='radial', sort = FALSE) %>% 
+    #         layout(title = "#Unique Sequence by Cancer Type", showlegend = T,
+    #                xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+    #                yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
+    #     t <- list(size = 10)
+    #     p %>% layout(font=t)
+    # })
     
     # Pie chart of Cancer_Type of Unique SNPs  ----
-    output$fig.pieCancer <- renderPlotly({
+    output$fig.pieSNPCancer <- renderPlotly({
         p <- plot_ly() %>% 
-            add_pie(data = count(data, Cancer_Type), labels = ~Cancer_Type, values = ~n, 
-                    hole = 0, name = "Cancer_Type", textinfo='label+percent', insidetextorientation='radial') %>% 
+            add_pie(data = dataSNPCancer_Type, labels = ~Cancer_Type, values = ~n, 
+                    hole = 0, name = "Cancer_Type", textinfo='label+percent', insidetextorientation='radial', sort = FALSE) %>% 
             layout(title = "#Unique SNPs by Cancer Type", showlegend = T,
                    xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
                    yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
@@ -347,7 +387,7 @@ server <- function(input, output) {
                    yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
         
         t <- list(size = 10)
-        p %>% layout(font=t, margin = list(t = 50, b = 70, l = 70, r = 100))
+        p %>% layout(font=t, margin = list(t = 50, b = 120, l = 70, r = 100))
     })
     
     # Bar plots Genes by Samples ----
