@@ -61,16 +61,47 @@ dbPepVar <- dplyr::left_join(dbPepVar_snps, dbPepVar, by = by) %>%
         Pep = round(Pep, digits = 3),
         NMD_gene = ifelse(NMD, "TRUE", "FALSE"),
         PTC_gene = ifelse(PTC == 1, "TRUE", "FALSE"),
-        Change =  gsub('[0-9]+', '>', gsub('p.', '', HGVSp))) %>%
+        Change =  gsub('[0-9]+', '>', gsub('p.', '', HGVSp, fixed = T))) %>%
     dplyr::rename(          
         Gene = "Hugo_Symbol",
         Sample = "Tumor_Sample_Barcode.x",
         Others_Samples = "Tumor_Sample_Barcode.y") %>%
-    dplyr::select(c("Cancer_Type", "Sample", "Others_Samples", "Gene", "GeneCards",  "Refseq_protein", "Protein_search",
-                    "snp_id", "SNP_search", "Variant_Classification", "HGVSp", "Change", "i_transcript_name", "Chromosome", "Start_Position", "End_Position", "band", 
-                    "NMD_gene", "Peptide", "PTC_gene", "Score", "Pep", "Size_Ref", "Size_Mut", "Pos_Mut", "Rate_Size_Prot", "Rate_Pos_Mut")) %>%
     dplyr::mutate_if(is.factor, as.character)  %>%
-    dplyr::mutate_at(vars("Variant_Classification", "Cancer_Type", "Chromosome"), as.factor) 
+    dplyr::mutate_at(vars("Variant_Classification", "Cancer_Type", "Chromosome"), as.factor)  %>%
+    dplyr::mutate(Variant_Classification =  forcats::fct_recode(Variant_Classification,
+                                                       Missense = "Missense_Mutation",
+                                                       Frameshift = "Frame_Shift_Del",
+                                                       Nonsense = "Nonsense_Mutation",
+                                                       Nonstop = "Nonstop_Mutation",
+                                                       Indel = "In_Frame_Del") )  
+
+props <- c("Gly" = "Non-Polar",
+"Ala" = "Non-Polar",
+"Pro" = "Non-Polar",
+"Val" = "Non-Polar",
+"Leu" = "Non-Polar",
+"Ile" = "Non-Polar",
+"Met" = "Non-Polar",
+"Trp" = "Aromatic",
+"Phe" = "Aromatic",
+"Tyr" = "Aromatic",
+"Ser" = "P.Neutral",
+"Thr" = "P.Uncharged",
+"Cys" = "P.Uncharged",
+"Asn" = "P.Uncharged",
+"Gln" = "P.Uncharged",
+"Lys" = "P.Basic",
+"Arg" = "P.Basic",
+"His" = "P.Basic",
+"Glu" = "P.Acid",
+"Asp" = "P.Acid")
+
+dbPepVar <- dbPepVar %>%
+    dplyr::mutate(Prop_change = ifelse(nchar(dbPepVar$Change) > 7,  "Multiple", stringr::str_replace_all(Change, props))) %>%
+    dplyr::select(c("Cancer_Type", "Sample", "Others_Samples", "Gene", "GeneCards",  "Refseq_protein", "Protein_search",
+                    "snp_id", "SNP_search", "Variant_Classification", "HGVSp", "Change", "Prop_change", "i_transcript_name", "Chromosome", "Start_Position", "End_Position", "band", 
+                    "NMD_gene", "Peptide", "PTC_gene", "Score", "Pep", "Size_Ref", "Size_Mut", "Pos_Mut", "Rate_Size_Prot", "Rate_Pos_Mut"))
+
 
 rm(dbPepVar_snps,by, link_genecards, link_proteins, link_snps, f)
 
@@ -169,6 +200,14 @@ ui <- fluidPage(
         ),
     ),
     fluidRow(
+        column(12, wellPanel(c("Properties Changes of Samples by Cancer")))
+    ),
+    fluidRow(
+        column(12, 
+               plotlyOutput("fig.barProperties")
+        )
+    ),
+    fluidRow(
         column(12, wellPanel(c("Mutations of Samples per Chromosome by Cancer")))
     ),
     fluidRow(
@@ -182,43 +221,62 @@ ui <- fluidPage(
     # Sidebar with a slider input for number of bins
     sidebarLayout(
         sidebarPanel(
-            # conditionalPanel(
-            #     'input.tab === "Plots"',
-            #     selectInput('xcol','X Variable', names(mtcars)),
-            #     selectInput('ycol','Y Variable', names(mtcars)),
-            #     selected = names(mtcars)[[2]]
-            # ),
             conditionalPanel(
                 'input.tab === "dbPepVar"',
-                checkboxGroupInput("show_vars_dbPepVar", "Select columns in dbPepVar to show:",
-                                   names(dbPepVar), selected = names(dbPepVar)[c(1,2,4:11)]) 
+                radioButtons("show_unique_dbPepVar", 
+                             "Show rows", 
+                             choices = list("Unique" = "unique" , "All" = "all"),  
+                             selected = c("unique"),
+                             inline = TRUE),
+                checkboxGroupInput("show_vars_dbPepVar", 
+                                   "Select columns in dbPepVar to show",
+                                   names(dbPepVar), selected = names(dbPepVar)[c(1,2,4:11)])
             ),
             conditionalPanel(
                 'input.tab === "BrCa evidence"',
+                radioButtons("show_unique_BrCa", 
+                             "Show rows", 
+                             choices = list("Unique" = "unique" , "All" = "all"),  
+                             selected = c("all"),
+                             inline = TRUE),
                 checkboxGroupInput("show_vars_BrCa", "Select columns in BrCa evidence to show:",
-                                   names(BrCa), selected = names(BrCa)[c(1:4)])
+                                   names(BrCa), selected = names(BrCa)[c(1:4,51,54)])
             ),
             conditionalPanel(
                 'input.tab === "CrCa evidence"',
+                radioButtons("show_unique_CrCa", 
+                             "Show rows", 
+                             choices = list("Unique" = "unique" , "All" = "all"),  
+                             selected = c("all"),
+                             inline = TRUE),
                 checkboxGroupInput("show_vars_CrCa", "Select columns in CrCa evidence to show:",
-                                   names(CrCa), selected = names(CrCa)[c(1:4)])
+                                   names(CrCa), selected = names(CrCa)[c(1:4,47,50)])
             ),
             conditionalPanel(
                 'input.tab === "OvCa evidence"',
+                radioButtons("show_unique_OvCa", 
+                             "Show rows", 
+                             choices = list("Unique" = "unique" , "All" = "all"), 
+                             selected = c("all"),
+                             inline = TRUE),
                 checkboxGroupInput("show_vars_OvCa", "Select columns in OvCa evidence to show:",
-                                   names(OvCa), selected = names(OvCa)[c(1:4)])
+                                   names(OvCa), selected = names(OvCa)[c(1:4,47,50)])
             ),
             conditionalPanel(
                 'input.tab === "PrCa evidence"',
+                radioButtons("show_unique_PrCa", 
+                             "Show rows", 
+                             choices = list("Unique" = "unique" , "All" = "all"), 
+                             selected = c("all"),
+                             inline = TRUE),
                 checkboxGroupInput("show_vars_PrCa", "Select columns in PrCa evidence to show:",
-                                   names(PrCa), selected = names(PrCa)[c(1:4)])
+                                   names(PrCa), selected = names(PrCa)[c(1:4,51,54)])
             ),
             width = 3
         ),
         mainPanel(
             tabsetPanel(
                 id = 'tab',
-                #tabPanel("Plots",  plotlyOutput('plot') ),
                 tabPanel("dbPepVar", DT::dataTableOutput("tb_dbPepVar")),
                 tabPanel("BrCa evidence", DT::dataTableOutput("tb_BrCa")),
                 tabPanel("CrCa evidence", DT::dataTableOutput("tb_CrCa")),
@@ -232,24 +290,6 @@ ui <- fluidPage(
 
 # ==== server.R ===============================================================
 server <- function(input, output) {
-    
-
-    # x <- reactive({
-    #     mtcars[,input$xcol]
-    # })
-    # 
-    # y <- reactive({
-    #     mtcars[,input$ycol]
-    # })
-    # 
-    # 
-    # output$plot <- renderPlotly(
-    #     # plot1 <- plot_ly(
-    #     #     x = x(),
-    #     #     y = y(),
-    #     #     type = 'scatter',
-    #     #     mode = 'markers')
-    # )
 
     data <- dbPepVar %>% 
         dplyr::select(c("Cancer_Type", "Gene", "Variant_Classification", "Refseq_protein",  "snp_id", "HGVSp", "Change", "Chromosome"))  %>% 
@@ -324,6 +364,20 @@ server <- function(input, output) {
         dplyr::filter(Gene %in% GeneTop) %>% 
         pivot_wider( names_from = "Cancer_Type", values_from = n)
     
+    PropTop <- dbPepVar %>% 
+        group_by(Prop_change) %>% 
+        count() %>% 
+        arrange(desc(n)) %>% 
+        head(.,25) %>% 
+        dplyr::select(Prop_change) %>%
+        pull(.)
+    
+    data_Properties <- dbPepVar %>% 
+        group_by(Prop_change, Cancer_Type) %>% 
+        count()  %>% 
+        dplyr::filter(Prop_change %in% PropTop) %>% 
+        pivot_wider( names_from = "Cancer_Type", values_from = n)
+    
     # Bar plot of Samples by Cancer Type  ----
     output$fig.barCancerSamples <- renderPlotly({
         p <- plot_ly(data = count(dbPepVar, Cancer_Type, Sample) %>% count(Cancer_Type) , x = ~Cancer_Type, y = ~n, type = 'bar',
@@ -348,19 +402,7 @@ server <- function(input, output) {
         t <- list(size = 10)
         p %>% layout(font=t)
     })
-    
-    # # Pie chart of Cancer_Type of Unique Sequence  ----
-    # output$fig.pieSequenceCancer <- renderPlotly({
-    #     p <- plot_ly() %>% 
-    #         add_pie(data = dataSequenceCancer, labels = ~Cancer_Type, values = ~n, 
-    #                 hole = 0, name = "Cancer_Type", textinfo='label+percent', insidetextorientation='radial', sort = FALSE) %>% 
-    #         layout(title = "#Unique Sequence by Cancer Type", showlegend = T,
-    #                xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
-    #                yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
-    #     t <- list(size = 10)
-    #     p %>% layout(font=t)
-    # })
-    
+
     # Pie chart of Cancer_Type of Unique SNPs  ----
     output$fig.pieSNPCancer <- renderPlotly({
         p <- plot_ly() %>% 
@@ -417,7 +459,7 @@ server <- function(input, output) {
             add_trace(y = ~OvCa, name = 'OvCa') %>% 
             add_trace(y = ~PrCa, name = 'PrCa')  %>% 
             layout(yaxis = list(title = 'Count by Samples'), 
-                   xaxis = list(title = "Gene", tickangle = -45, categoryorder = "array", categoryarray = ChangeTopSamples),
+                   xaxis = list(title = "Protein Change", tickangle = -45, categoryorder = "array", categoryarray = ChangeTopSamples),
                    barmode = 'group')
     })
     
@@ -428,7 +470,18 @@ server <- function(input, output) {
             add_trace(y = ~OvCa, name = 'OvCa') %>% 
             add_trace(y = ~PrCa, name = 'PrCa')  %>% 
             layout(yaxis = list(title = 'Count per unique SNP'), 
-                   xaxis = list(title = "Gene", tickangle = -45, categoryorder = "array", categoryarray = ChangeTop),
+                   xaxis = list(title = "Protein Change", tickangle = -45, categoryorder = "array", categoryarray = ChangeTop),
+                   barmode = 'group')
+    })
+    #
+    # Bar plot of mutation on Top Prop_change by Cancer Samples ----
+    output$fig.barProperties <- renderPlotly({
+        plot_ly(data_Properties, x = ~Prop_change, y = ~BrCa, type = 'bar', name = 'BrCa') %>% 
+            add_trace(y = ~CrCa, name = 'CrCa') %>% 
+            add_trace(y = ~OvCa, name = 'OvCa') %>% 
+            add_trace(y = ~PrCa, name = 'PrCa')  %>% 
+            layout(yaxis = list(title = 'Count by Samples'), 
+                   xaxis = list(title = "Property group change", tickangle = -45, ategoryorder = "array", categoryarray = PropTop),
                    barmode = 'group')
     })
     
@@ -439,7 +492,7 @@ server <- function(input, output) {
             add_trace(y = ~OvCa, name = 'OvCa') %>% 
             add_trace(y = ~PrCa, name = 'PrCa')  %>% 
             layout(yaxis = list(title = 'Count by Samples'), 
-                   xaxis = list(title = "Gene", tickangle = -45, ategoryorder = "array", categoryarray = paste0(c(0:22, "X","Y"))),
+                   xaxis = list(title = "Chromosome", tickangle = -45, ategoryorder = "array", categoryarray = paste0(c(0:22, "X","Y"))),
                    barmode = 'group')
     })
     
@@ -547,7 +600,11 @@ server <- function(input, output) {
     # dbPepVar ----
     output$tb_dbPepVar <- DT::renderDataTable({
         DT::datatable(
-            dbPepVar[, input$show_vars_dbPepVar, drop = FALSE],
+            if(input$show_unique_dbPepVar == "unique"){ 
+                dbPepVar[ !duplicated(dbPepVar[, input$show_vars_dbPepVar]) , input$show_vars_dbPepVar, drop = FALSE]
+            } else{
+                dbPepVar[ , input$show_vars_dbPepVar, drop = FALSE]
+                } ,
             class = 'cell-border stripe',
             rownames = FALSE,
             filter = 'top',
@@ -560,7 +617,11 @@ server <- function(input, output) {
     # BrCa ----
     output$tb_BrCa <- DT::renderDataTable({
         DT::datatable(
-            BrCa[, input$show_vars_BrCa, drop = FALSE],
+            if(input$show_unique_BrCa == "unique"){ 
+                BrCa[ !duplicated(BrCa[, input$show_vars_BrCa]) , input$show_vars_BrCa, drop = FALSE]
+            } else{
+                BrCa[ , input$show_vars_BrCa, drop = FALSE]
+            } ,
             class = 'cell-border stripe',
             rownames = FALSE,
             filter = 'top',
@@ -573,7 +634,11 @@ server <- function(input, output) {
     # CrCa ----
     output$tb_CrCa <- DT::renderDataTable({
         DT::datatable(
-            CrCa[, input$show_vars_CrCa, drop = FALSE],
+            if(input$show_unique_CrCa == "unique"){ 
+                CrCa[ !duplicated(CrCa[, input$show_vars_CrCa]) , input$show_vars_CrCa, drop = FALSE]
+            } else{
+                CrCa[ , input$show_vars_CrCa, drop = FALSE]
+            } ,
             class = 'cell-border stripe',
             rownames = FALSE,
             filter = 'top',
@@ -586,7 +651,11 @@ server <- function(input, output) {
     # OvCa ----
     output$tb_OvCa <- DT::renderDataTable({
         DT::datatable(
-            OvCa[, input$show_vars_OvCa, drop = FALSE],
+            if(input$show_unique_OvCa == "unique"){ 
+                OvCa[ !duplicated(OvCa[, input$show_vars_OvCa]) , input$show_vars_OvCa, drop = FALSE]
+            } else{
+                OvCa[ , input$show_vars_OvCa, drop = FALSE]
+            } ,
             class = 'cell-border stripe',
             rownames = FALSE,
             filter = 'top',
@@ -599,7 +668,11 @@ server <- function(input, output) {
     # PrCa ----
     output$tb_PrCa <- DT::renderDataTable({
         DT::datatable(
-            PrCa[, input$show_vars_PrCa, drop = FALSE],
+            if(input$show_unique_PrCa == "unique"){ 
+                PrCa[ !duplicated(PrCa[, input$show_vars_PrCa]) , input$show_vars_PrCa, drop = FALSE]
+            } else{
+                PrCa[ , input$show_vars_PrCa, drop = FALSE]
+            } ,
             class = 'cell-border stripe',
             rownames = FALSE,
             filter = 'top',
