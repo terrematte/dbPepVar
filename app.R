@@ -178,7 +178,7 @@ ui <- fluidPage(
         ),
     ),
     fluidRow(
-        column(12, wellPanel(c("Protein Changes of Samples by Cancer")))
+        column(12, wellPanel(c("Amino acid changes of Samples by Cancer")))
     ),
     fluidRow(
         column(8, 
@@ -189,7 +189,7 @@ ui <- fluidPage(
         ),
     ),
     fluidRow(
-        column(12, wellPanel(c("Protein Changes of unique SNPs identified from Peptides")))
+        column(12, wellPanel(c("Amino acid changes of unique SNPs identified from Peptides")))
     ),
     fluidRow(
         column(8, 
@@ -224,8 +224,8 @@ ui <- fluidPage(
             conditionalPanel(
                 'input.tab === "dbPepVar"',
                 radioButtons("show_unique_dbPepVar", 
-                             "Show rows", 
-                             choices = list("Unique" = "unique" , "All" = "all"),  
+                             "Show", 
+                             choices = list("Unique rows" = "unique" , "All rows" = "all"),  
                              selected = c("unique"),
                              inline = TRUE),
                 checkboxGroupInput("show_vars_dbPepVar", 
@@ -235,8 +235,8 @@ ui <- fluidPage(
             conditionalPanel(
                 'input.tab === "BrCa evidence"',
                 radioButtons("show_unique_BrCa", 
-                             "Show rows", 
-                             choices = list("Unique" = "unique" , "All" = "all"),  
+                             "Show", 
+                             choices = list("Unique rows" = "unique" , "All rows" = "all"),  
                              selected = c("all"),
                              inline = TRUE),
                 checkboxGroupInput("show_vars_BrCa", "Select columns in BrCa evidence to show:",
@@ -245,8 +245,8 @@ ui <- fluidPage(
             conditionalPanel(
                 'input.tab === "CrCa evidence"',
                 radioButtons("show_unique_CrCa", 
-                             "Show rows", 
-                             choices = list("Unique" = "unique" , "All" = "all"),  
+                             "Show", 
+                             choices = list("Unique rows" = "unique" , "All rows" = "all"),  
                              selected = c("all"),
                              inline = TRUE),
                 checkboxGroupInput("show_vars_CrCa", "Select columns in CrCa evidence to show:",
@@ -255,8 +255,8 @@ ui <- fluidPage(
             conditionalPanel(
                 'input.tab === "OvCa evidence"',
                 radioButtons("show_unique_OvCa", 
-                             "Show rows", 
-                             choices = list("Unique" = "unique" , "All" = "all"), 
+                             "Show", 
+                             choices = list("Unique rows" = "unique" , "All rows" = "all"),  
                              selected = c("all"),
                              inline = TRUE),
                 checkboxGroupInput("show_vars_OvCa", "Select columns in OvCa evidence to show:",
@@ -265,8 +265,8 @@ ui <- fluidPage(
             conditionalPanel(
                 'input.tab === "PrCa evidence"',
                 radioButtons("show_unique_PrCa", 
-                             "Show rows", 
-                             choices = list("Unique" = "unique" , "All" = "all"), 
+                             "Show", 
+                             choices = list("Unique rows" = "unique" , "All rows" = "all"),  
                              selected = c("all"),
                              inline = TRUE),
                 checkboxGroupInput("show_vars_PrCa", "Select columns in PrCa evidence to show:",
@@ -452,25 +452,25 @@ server <- function(input, output) {
                    barmode = 'group')
     })
     
-    # Bar plot of Protein Change  by Samples  ----
+    # Bar plot of Amino acid change  by Samples  ----
     output$fig.barChangeSamples <- renderPlotly({
         plot_ly(data_ChangeSamples, x = ~Change, y = ~BrCa, type = 'bar', name = 'BrCa') %>% 
             add_trace(y = ~CrCa, name = 'CrCa') %>% 
             add_trace(y = ~OvCa, name = 'OvCa') %>% 
             add_trace(y = ~PrCa, name = 'PrCa')  %>% 
             layout(yaxis = list(title = 'Count by Samples'), 
-                   xaxis = list(title = "Protein Change", tickangle = -45, categoryorder = "array", categoryarray = ChangeTopSamples),
+                   xaxis = list(title = "Amino acid change", tickangle = -45, categoryorder = "array", categoryarray = ChangeTopSamples),
                    barmode = 'group')
     })
     
-    # Bar plot of Protein Change per SNP by Cancer ----
+    # Bar plot of Amino acid change per SNP by Cancer ----
     output$fig.barChange <- renderPlotly({
         plot_ly(data_Change, x = ~Change, y = ~BrCa, type = 'bar', name = 'BrCa') %>% 
             add_trace(y = ~CrCa, name = 'CrCa') %>% 
             add_trace(y = ~OvCa, name = 'OvCa') %>% 
             add_trace(y = ~PrCa, name = 'PrCa')  %>% 
             layout(yaxis = list(title = 'Count per unique SNP'), 
-                   xaxis = list(title = "Protein Change", tickangle = -45, categoryorder = "array", categoryarray = ChangeTop),
+                   xaxis = list(title = "Amino acid change", tickangle = -45, categoryorder = "array", categoryarray = ChangeTop),
                    barmode = 'group')
     })
     #
@@ -529,7 +529,7 @@ server <- function(input, output) {
     )
     
     
-    # table of Protein Change by SNPs ----
+    # table of Amino acid change by SNPs ----
     output$tb_data_ChangeSamples <- DT::renderDataTable({
         DT::datatable(
             dbPepVar %>% 
@@ -546,7 +546,7 @@ server <- function(input, output) {
             escape=FALSE)
     })
     
-    # table of Protein Change by SNPs ----
+    # table of Amino acid change by SNPs ----
     output$tb_data_Change <- DT::renderDataTable({
         DT::datatable(
             data %>% 
