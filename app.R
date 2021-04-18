@@ -5,7 +5,7 @@
 # Find out more about building applications with Shiny here:
 #
 #    http://shiny.rstudio.com/
-#
+#    https://bookdown.org/weicheng/shinyTutorial/ui.html
 
 # ==== Loading library ===============================================================
 library(shiny)
@@ -108,24 +108,26 @@ rm(dbPepVar_snps,by, link_genecards, link_proteins, link_snps, f)
 
 # ==== ui.R ===============================================================
 ui <- fluidPage(
-    
-    # Application title
-    titlePanel(
-        windowTitle = "dbPepVar",
-        title = tags$head(tags$link(rel="icon", 
-                                    href=img_uri_favicon("icons/favicon.png"),
-                                    type="image/x-icon"))
-    ),
-    headerPanel("dbPepVar"),
-    
-    fluidRow(
-        column(12, wellPanel(p("
+        # Application title
+        titlePanel(
+            windowTitle = "dbPepVar",
+            title = tags$head(tags$link(rel="icon",
+                                        href=img_uri_favicon("icons/favicon.png"),
+                                        type="image/x-icon"))
+        ),
+    navbarPage(
+        img(src="favicon.png", align="right", width="35px"),
+
+        # ==== Tab dbPepVar ===============================================================
+        tabPanel('dbPepVar',
+        fluidRow(
+            column(12, wellPanel(p("
         The dbPepVar is a new proteogenomics database which combines genetic variation information from dbSNP with 
         protein sequences from NCBI's RefSeq. We then perform a pan-cancer analysis (Ovarian, Colorectal, Breast and Prostate) 
         using public mass spectrometry datasets to identify genetic variations and genes present in the analyzed samples. 
         As results, were identified 5,449 variant peptides in ovarian (OvCa), 2,722 in prostate (PrCa), 2,392 in breast (BrCa) and 3,061 in colon-rectal cancer (CrCa)."),
-                             
-                             p("
+                                 
+                                 p("
         Compared to other approaches, our database contains a greater diversity of variants, including missense, 
         nonsense mutations, loss of termination codon, insertions, deletions (of any size), frameshifts and mutations that 
         alter the start translation. Besides, for each protein, only the variant tryptic peptides derived from enzymatic cleavage 
@@ -134,158 +136,212 @@ ui <- fluidPage(
         and filtered by the scores for each base. Using public MS data from four types of cancer, we mostly identified 
         cancer-specific SNPs, but shared mutations were also present in a lower amount.                               
         "),
-                             icon("cog", lib = "glyphicon"), 
-                             em( "
+                                 icon("cog", lib = "glyphicon"), 
+                                 em( "
         Click on legends of plots to activate or deactivate labels. Use ",  
-                                 a("regex", href="cheatsheets_regex.pdf", target="_blank"), 
-                                 " to search in datatables."
-        )))
-    ),
-    fluidRow(
-        column(3,
-               plotlyOutput("fig.barCancerSamples")
+                                     a("regex", href="cheatsheets_regex.pdf", target="_blank"), 
+                                     " to search in datatables."
+                                 )))
         ),
-        column(3,
-               plotlyOutput("fig.barSequenceCancer")
+        fluidRow(
+            column(3,
+                   plotlyOutput("fig.barCancerSamples")
+            ),
+            column(3,
+                   plotlyOutput("fig.barSequenceCancer")
+            ),
+            column(3,
+                   plotlyOutput("fig.pieSNPCancer")
+            ),
+            column(3,
+                   plotlyOutput("fig.pieVarClassif")
+            )
         ),
-        column(3,
-               plotlyOutput("fig.pieSNPCancer")
+        fluidRow(
+            column(12, wellPanel(c("Mutated Genes of Samples by Cancer")))
         ),
-        column(3,
-               plotlyOutput("fig.pieVarClassif")
+        fluidRow(
+            column(8, 
+                   plotlyOutput("fig.barGeneSamples")
+            ),
+            column(4, 
+                   DT::dataTableOutput("tb_data_GeneSamples")
+            ),
+        ),
+        fluidRow(
+            column(12, wellPanel(c("Mutated Genes of unique SNPs identified from Peptides")))
+        ),
+        fluidRow(
+            column(8, 
+                   plotlyOutput("fig.barGene")
+            ),
+            column(4, 
+                   DT::dataTableOutput("tb_data_Gene")
+            ),
+        ),
+        fluidRow(
+            column(12, wellPanel(c("Amino acid changes of Samples by Cancer")))
+        ),
+        fluidRow(
+            column(8, 
+                   plotlyOutput("fig.barChangeSamples")
+            ),
+            column(4, 
+                   DT::dataTableOutput("tb_data_ChangeSamples")
+            ),
+        ),
+        fluidRow(
+            column(12, wellPanel(c("Amino acid changes of unique SNPs identified from Peptides")))
+        ),
+        fluidRow(
+            column(8, 
+                   plotlyOutput("fig.barChange")
+            ),
+            column(4, 
+                   DT::dataTableOutput("tb_data_Change")
+            ),
+        ),
+        fluidRow(
+            column(12, wellPanel(c("Properties Changes of Samples by Cancer")))
+        ),
+        fluidRow(
+            column(12, 
+                   plotlyOutput("fig.barProperties")
+            )
+        ),
+        fluidRow(
+            column(12, wellPanel(c("Mutations of Samples per Chromosome by Cancer")))
+        ),
+        fluidRow(
+            column(12, 
+                   plotlyOutput("fig.barChromosome")
+            )
+        ),
+        fluidRow(
+            column(12, wellPanel(
+            h3("Citation:"),
+            c("Cunha,  L M; Terrematte, P C A, Fiúza, T S; Silva, V L; Kroll, J E; Souza, S J; Souza, G A. (2021)"),
+            em("\"A proteogenomics approach for analysis and identification of genetic variants in different types of cancer associated with the inefficiency of the Nonsense-Mediated Decay machinery\"."),
+            em("To be published."), br(),  br(),
+            h4("Authors:"),
+            c("- Lucas Marques da Cunha¹"),br(),
+            c("- Patrick Cesar A. Terrematte¹,"),br(),
+            c("- Tayná da Silva Fiúza¹, "),br(),
+            c("- Vandeclécio L. da Silva1, "),br(),
+            c("- José Eduardo Kroll¹, "),br(),
+            c("- Sandro José de Souza¹,²,"), br(),
+            c("- Gustavo Antônio de Souza¹,³,"),br(),
+            h4("Affiliations: "),
+            c("¹ Bioinformatics Multidisciplinary Environment - UFRN,"),br(),
+            c("² Brain Institute - UFRN. "),br(),
+            c("³ Department of Biochemistry - UFRN")))
         )
-    ),
-    fluidRow(
-        column(12, wellPanel(c("Mutated Genes of Samples by Cancer")))
-    ),
-    fluidRow(
-        column(8, 
-               plotlyOutput("fig.barGeneSamples")
         ),
-        column(4, 
-               DT::dataTableOutput("tb_data_GeneSamples")
+        # ==== Tab Variants ===============================================================
+        tabPanel(
+            'Variants',
+            
+            # fluidRow(
+            #     column(12, p("Complete dbPepVar with SNPs per Sampĺes. "))
+            # ),
+            # Sidebar with a slider input for number of bins
+            sidebarLayout(
+                sidebarPanel(
+                        radioButtons("show_unique_dbPepVar", 
+                                     "Show", 
+                                     choices = list("Unique rows" = "unique" , "All rows" = "all"),  
+                                     selected = c("unique"),
+                                     inline = TRUE),
+                        checkboxGroupInput("show_vars_dbPepVar", 
+                                           "Select columns in dbPepVar to show",
+                                           names(dbPepVar), selected = names(dbPepVar)[c(1,2,4:11)]),
+                    width = 3
+                ),
+                
+                mainPanel(
+                        DT::dataTableOutput("tb_dbPepVar"),
+                    # tabsetPanel(
+                    #     id = 'tab',
+                    #     tabPanel("dbPepVar",)
+                    # ),
+                    width = 9
+                )
+            )
         ),
-    ),
-    fluidRow(
-        column(12, wellPanel(c("Mutated Genes of unique SNPs identified from Peptides")))
-    ),
-    fluidRow(
-        column(8, 
-               plotlyOutput("fig.barGene")
+        # ==== Tab Evidence Tables ===============================================================
+        tabPanel(
+            'Evidence Tables',
+            
+            # fluidRow(
+            #     column(12, p("Complete Evidence tables of dbPepVar. "))
+            # ),
+            # Sidebar with a slider input for number of bins
+            sidebarLayout(
+                sidebarPanel(
+                    conditionalPanel(
+                        'input.tab_evidance === "BrCa evidence"',
+                        radioButtons("show_unique_BrCa", 
+                                     "Show", 
+                                     choices = list("Unique rows" = "unique" , "All rows" = "all"),  
+                                     selected = c("all"),
+                                     inline = TRUE),
+                        checkboxGroupInput("show_vars_BrCa", "Select columns in BrCa evidence to show:",
+                                           names(BrCa), selected = names(BrCa)[c(1:4,51,54)])
+                    ),
+                    conditionalPanel(
+                        'input.tab_evidance === "CrCa evidence"',
+                        radioButtons("show_unique_CrCa", 
+                                     "Show", 
+                                     choices = list("Unique rows" = "unique" , "All rows" = "all"),  
+                                     selected = c("all"),
+                                     inline = TRUE),
+                        checkboxGroupInput("show_vars_CrCa", "Select columns in CrCa evidence to show:",
+                                           names(CrCa), selected = names(CrCa)[c(1:4,47,50)])
+                    ),
+                    conditionalPanel(
+                        'input.tab_evidance === "OvCa evidence"',
+                        radioButtons("show_unique_OvCa", 
+                                     "Show", 
+                                     choices = list("Unique rows" = "unique" , "All rows" = "all"),  
+                                     selected = c("all"),
+                                     inline = TRUE),
+                        checkboxGroupInput("show_vars_OvCa", "Select columns in OvCa evidence to show:",
+                                           names(OvCa), selected = names(OvCa)[c(1:4,47,50)])
+                    ),
+                    conditionalPanel(
+                        'input.tab_evidance === "PrCa evidence"',
+                        radioButtons("show_unique_PrCa", 
+                                     "Show", 
+                                     choices = list("Unique rows" = "unique" , "All rows" = "all"),  
+                                     selected = c("all"),
+                                     inline = TRUE),
+                        checkboxGroupInput("show_vars_PrCa", "Select columns in PrCa evidence to show:",
+                                           names(PrCa), selected = names(PrCa)[c(1:4,51,54)])
+                    ),
+                    width = 3
+                ),
+                mainPanel(
+                    tabsetPanel(
+                        id = 'tab_evidance',
+                        tabPanel("BrCa evidence", DT::dataTableOutput("tb_BrCa")),
+                        tabPanel("CrCa evidence", DT::dataTableOutput("tb_CrCa")),
+                        tabPanel("OvCa evidence", DT::dataTableOutput("tb_OvCa")),
+                        tabPanel("PrCa evidence", DT::dataTableOutput("tb_PrCa"))
+                    ),
+                    width = 9
+                )
+            )
         ),
-        column(4, 
-               DT::dataTableOutput("tb_data_Gene")
-        ),
-    ),
-    fluidRow(
-        column(12, wellPanel(c("Amino acid changes of Samples by Cancer")))
-    ),
-    fluidRow(
-        column(8, 
-               plotlyOutput("fig.barChangeSamples")
-        ),
-        column(4, 
-               DT::dataTableOutput("tb_data_ChangeSamples")
-        ),
-    ),
-    fluidRow(
-        column(12, wellPanel(c("Amino acid changes of unique SNPs identified from Peptides")))
-    ),
-    fluidRow(
-        column(8, 
-               plotlyOutput("fig.barChange")
-        ),
-        column(4, 
-               DT::dataTableOutput("tb_data_Change")
-        ),
-    ),
-    fluidRow(
-        column(12, wellPanel(c("Properties Changes of Samples by Cancer")))
-    ),
-    fluidRow(
-        column(12, 
-               plotlyOutput("fig.barProperties")
-        )
-    ),
-    fluidRow(
-        column(12, wellPanel(c("Mutations of Samples per Chromosome by Cancer")))
-    ),
-    fluidRow(
-        column(12, 
-               plotlyOutput("fig.barChromosome")
-        )
-    ),
-    fluidRow(
-        column(12, wellPanel(c("Complete dbPepVar with SNPs per Sampĺes. ")))
-    ),
-    # Sidebar with a slider input for number of bins
-    sidebarLayout(
-        sidebarPanel(
-            conditionalPanel(
-                'input.tab === "dbPepVar"',
-                radioButtons("show_unique_dbPepVar", 
-                             "Show", 
-                             choices = list("Unique rows" = "unique" , "All rows" = "all"),  
-                             selected = c("unique"),
-                             inline = TRUE),
-                checkboxGroupInput("show_vars_dbPepVar", 
-                                   "Select columns in dbPepVar to show",
-                                   names(dbPepVar), selected = names(dbPepVar)[c(1,2,4:11)])
-            ),
-            conditionalPanel(
-                'input.tab === "BrCa evidence"',
-                radioButtons("show_unique_BrCa", 
-                             "Show", 
-                             choices = list("Unique rows" = "unique" , "All rows" = "all"),  
-                             selected = c("all"),
-                             inline = TRUE),
-                checkboxGroupInput("show_vars_BrCa", "Select columns in BrCa evidence to show:",
-                                   names(BrCa), selected = names(BrCa)[c(1:4,51,54)])
-            ),
-            conditionalPanel(
-                'input.tab === "CrCa evidence"',
-                radioButtons("show_unique_CrCa", 
-                             "Show", 
-                             choices = list("Unique rows" = "unique" , "All rows" = "all"),  
-                             selected = c("all"),
-                             inline = TRUE),
-                checkboxGroupInput("show_vars_CrCa", "Select columns in CrCa evidence to show:",
-                                   names(CrCa), selected = names(CrCa)[c(1:4,47,50)])
-            ),
-            conditionalPanel(
-                'input.tab === "OvCa evidence"',
-                radioButtons("show_unique_OvCa", 
-                             "Show", 
-                             choices = list("Unique rows" = "unique" , "All rows" = "all"),  
-                             selected = c("all"),
-                             inline = TRUE),
-                checkboxGroupInput("show_vars_OvCa", "Select columns in OvCa evidence to show:",
-                                   names(OvCa), selected = names(OvCa)[c(1:4,47,50)])
-            ),
-            conditionalPanel(
-                'input.tab === "PrCa evidence"',
-                radioButtons("show_unique_PrCa", 
-                             "Show", 
-                             choices = list("Unique rows" = "unique" , "All rows" = "all"),  
-                             selected = c("all"),
-                             inline = TRUE),
-                checkboxGroupInput("show_vars_PrCa", "Select columns in PrCa evidence to show:",
-                                   names(PrCa), selected = names(PrCa)[c(1:4,51,54)])
-            ),
-            width = 3
-        ),
-        mainPanel(
-            tabsetPanel(
-                id = 'tab',
-                tabPanel("dbPepVar", DT::dataTableOutput("tb_dbPepVar")),
-                tabPanel("BrCa evidence", DT::dataTableOutput("tb_BrCa")),
-                tabPanel("CrCa evidence", DT::dataTableOutput("tb_CrCa")),
-                tabPanel("OvCa evidence", DT::dataTableOutput("tb_OvCa")),
-                tabPanel("PrCa evidence", DT::dataTableOutput("tb_PrCa"))
-            ),
-            width = 9
-        )
+        # ==== Tab Spectrum Viewer ===============================================================
+        tabPanel('Spectrum Viewer',
+                 fluidRow(
+                     column(12, 
+                            htmlOutput("frame")
+                     )
+                 )
+                 )
     )
+    
 )
 
 # ==== server.R ===============================================================
@@ -680,6 +736,13 @@ server <- function(input, output) {
             options = list.options,  
             escape=FALSE
         )
+    })
+    
+    output$frame <- renderUI({
+        tags$iframe(
+            seamless="seamless",
+            src="dbPepVar.ms/index.html", height='1000', width='100%',
+            style="border:0;")
     })
 }
 

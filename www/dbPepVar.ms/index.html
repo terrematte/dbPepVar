@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="">
+        <meta name="author" content="">
+        <meta http-equiv="Cache-control" content="NO-CACHE">
+
+        <title>dbPepVar - Mass Spectrometry Viewer</title>
+
+        <link rel="stylesheet" href="./styles/bootstrap.min.css" />
+        <link rel="stylesheet" href="./styles/bootstrap-slider.min.css" />
+        <link rel="stylesheet" href="./styles/jquery-ui.min.css" />
+        <link rel="stylesheet" href="./styles/panel-tabs.css" />
+        <link rel="stylesheet" href="./styles/ui.jqgrid-bootstrap.css" />
+
+        <style>
+            .minilogotype { margin-top: 0px; margin-bottom: 0px; }
+            .vspace5 { margin-top:5px; }
+            .vspace10 { margin-top:10px; }
+            .vspace15 { margin-top:15px; }
+            .vspace30 { margin-top:30px; }
+            .vspace40 { margin-top:40px; }
+            .vcenter { vertical-align: middle; float: none; }
+            .h600 { height:  835px; }
+            .boxborder { border-style:solid; border-width:1px; }
+            .boxheight { height:235px; }
+            .peps:hover:not(.pepsdisabled) { background-color:magenta; cursor: pointer; }
+            .peps:hover.pepsdisabled { background-color:#1c4263; cursor: pointer; }
+            .peps:active { background-color:red; }
+            .pepsdisabled { background-color:#2e6da4; color:#2e6da4; }
+            .pepholder { width: 500px; height: 500px; }
+            .col-centered{ float:none; margin: 0 auto; }
+            .aligngrid { background:black; position:absolute;  font-family:'Lucida Console',Monaco,monospace; font-size:14px; }
+            .ui-autocomplete { max-height: 100px; overflow-y: auto; overflow-x: hidden; padding-right: 20px; }
+            * html .ui-autocomplete { height: 100px; }
+            .line_aa_normal { display: block; position: absolute; width: 100%; height: 13px; cursor: pointer; }
+            .line_aa_normal_hover { background-color: white; }
+
+            .aa { position: absolute; }
+            .aa_normal { font-size: 12px; color: #5C5E32; font-weight: normal; }
+            .aa_focused { font-size: 12px; color: #FF9900; font-weight: bold; }
+            .aa_over { font-size: 12px; color: #FF00FF; font-weight: bold; }
+            .aa_clicked { font-size: 12px; color: red; font-weight: bold; }
+
+            #sequence_menu {position:absolute; width: 200px; z-index: 2000; }
+            .ui-autocomplete { max-height: 100px; overflow-y: auto; overflow-x: hidden; padding-right: 20px; }
+
+            .legend_text { position:relative; top:-5px; font-size: 12px; }
+            .legend_box { display:inline-block; width:30px; height:20px; border:1px solid black; }
+            .navbar-nav { padding-top:6px; }
+        </style>
+
+    </head>
+
+    <body>
+
+        <div class="vspace30"></div>
+
+        <!-- START PROT BROWSER -->
+        <div class="container-fluid" style="width: 90%">
+            <div class="row">
+                <!-- BOX LEFT -->
+                <div class="col-xs-3" id="boxleft">
+                    <div class="panel panel-primary h600" title="Peptides on Focus">
+                        <div class="panel-heading">
+                            <span class="glyphicon glyphicon-tasks"></span>
+                            Control Functions
+                        </div>
+
+                        <div class="panel-body clearfix">
+                          <!-- INIT SEARCH -->
+                          <div class="form-group vspace1">
+                              <div>
+                                  <label for="searchgene">
+                                      <span class="glyphicon glyphicon-cloud-download"></span>
+                                      Open gene:
+                                  </label>
+                                  <input type="text" class="form-control input-sm" id="searchgene">
+                                  <div class="vspace5">
+                                      <p id="stats_geneload" style="font-size:12px;font-style:oblique">No gene loaded</p>
+                                  </div>
+                              </div>
+                              <div class="vspace15">
+                                  <label for="searchseq">
+                                      <span class="glyphicon glyphicon-search"></span>
+                                      Find sequence:
+                                  </label>
+                                  <input type="text" class="form-control input-sm" id="searchseq">
+                                  <div class="vspace5">
+                                      <p id="stats_seqfind" style="font-size:12px;font-style:oblique"></p>
+                                  </div>
+                              </div>
+                          </div>
+
+                            <!-- ZOOM -->
+                            <div class="form-group vspace20 clearfix">
+                              <label for="searchseq">
+                                  <span class="glyphicon glyphicon-eye-open"></span>
+                                  Gene View:
+                              </label>
+                              <div class="row-fluid">
+                                <button type="button" class="btn btn-primary col-md-5 btn-sm" onclick="GENEZOOM=GENEZOOM/2;Draw_gene();">Zoom in</button>
+                                <div class="col-md-2"></div>
+                                <button type="button" class="btn btn-primary col-md-5 btn-sm" onclick="GENEZOOM=GENEZOOM*2;Draw_gene();">Zoom out</button>
+                              </div>
+                            </div>
+
+                            <!-- SELECT LIST -->
+                            <div class="form-group vspace20 clearfix">
+                                <label for="searchseq">
+                                    <span class="glyphicon glyphicon-eye-open"></span>
+                                    Peptides on focus:
+                                </label>
+                                <select class="form-control" size="10" id="peplist"></select>
+                                <div class="vspace5">
+                                    <p id="stats_peplist" style="font-size:12px;font-style:oblique">Total of 0 peptides</p>
+                                </div>
+                            </div>
+
+                            <!-- INIT BUTTONS -->
+                            <div class="form-group btn-group-vertical btn-block clearfix">
+                                <button type="button" id='butt_pepspec' class="btn btn-primary btn-sm disabled" data-toggle="modal" data-target="#dialog-peplist">
+                                    <span class="glyphicon glyphicon-stats"></span>
+                                    Peptide Spectrum
+                                </button>
+                                <button type="button" id='butt_pepexpr' class="btn btn-primary btn-sm disabled"  data-toggle="modal" data-target="#dialog-explist">
+                                    <span class="glyphicon glyphicon-align-right"></span>
+                                    Peptide Expression
+                                </button>
+                            </div>
+
+                            <!-- FILTER BOX -->
+                            <div class="form-group vspace20 clearfix">
+                              <label for="filterpep">
+                                <div class="glyphicon glyphicon-filter"></div>
+                                Filter PEP:
+                              </label>
+                              <div class="row-fluid">
+                                <div class="col-md-4" style="padding-left:0px;padding-right:0px;">
+                                  <input type="text" class="form-control input-sm" id="filterpep" value="100" onchange="PEP_cutoff=$('#filterpep').val();Click_samp();">
+                                </div>
+                                <div class="col-md-1"></div>
+                                <button type="button" class="btn btn-primary col-md-3 btn-sm" onclick="PEP_cutoff=$('#filterpep').val();Click_samp();">Apply</button>
+                                <div class="col-md-1"></div>
+                                <button type="button" class="btn btn-primary col-md-3 btn-sm" onclick="Clear_samp();">Clear</button>
+                              </div>
+                            </div>
+
+                            <!-- SELECT LIST -->
+                            <!--
+                            <div class="form-group vspace15">
+                                <label for="searchsamp">
+                                    <span class="glyphicon glyphicon-eye-open"></span>
+                                    Filter by Sample (disabled):
+                                </label>
+                                <select class="form-control" size="5" id="samplist"></select>
+                                <div class="vspace5">
+                                    <p id="stats_samplist" style="font-size:12px;font-style:oblique">Total of 0 samples</p>
+                                </div>
+                            </div>
+                            -->
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- BOX RIGHT -->
+                <div class="container-fluid col-xs-9">
+                    <div class="panel panel-primary h600">
+                        <div class="panel-heading">
+                            <span class="glyphicon glyphicon-sunglasses"></span>
+                            <span id="stats_viewer">
+                                Viewer: No gene loaded
+                            </span>
+                            <span class="pull-right">
+                                <!-- Tabs -->
+                                 <!--
+                                <ul class="nav panel-tabs">
+                                    <li class="dropdown">
+                                      <a href="#" data-toggle="dropdown">Gene Information<span class="caret"></span></a>
+                                      <ul class="dropdown-menu" role="menu">
+                                        <li><a onclick="if(selected_gene) window.open('http://www.genecards.org/cgi-bin/carddisp.pl?gene=' + selected_gene, '_blank');">GeneCards</a></li>
+                                        <li><a onclick="if(selected_gene) window.open('http://www.ncbi.nlm.nih.gov/gene/?term=' + selected_gene, '_blank');">Genes NCBI</a></li>
+                                        <li><a onclick="if(selected_gene) window.open('http://genome.ucsc.edu/cgi-bin/hgTracks?clade=mammal&org=Human&db=hg19&position=' + selected_gene, '_blank');">UCSC Browser</a></li>
+                                      </ul>
+                                    </li>
+                                </ul>
+                                -->
+                            </span>
+                        </div>
+
+                        <div class="panel-body">
+                          <!-- GENE STRUCTURE-->
+                          <div class="container-fluid">
+                            <div class="boxborder boxheight">
+                              <canvas id="genestruct" width="100%" height="100%">
+                              </canvas>
+                            </div>
+                          </div>
+
+                            <!-- RAPHAEL DRAW-->
+                            <div class="container-fluid" id="dialog-protbrowser">
+                                <div class="boxborder boxheight" id="holder"></div>
+                            </div>
+                            <!-- ALIGNMENTS-->
+                            <div class="container-fluid">
+                                <div class="boxborder boxheight aligngrid" id="aligngrid">
+                                    <!-- CONTENT FILLED BY PB -->
+                                </div>
+
+                                <!-- LEGENDAS -->
+                                <div class="container-fluid">
+                                    <div style="position:relative; top:255px;">
+                                        <div class="row" style="text-align:center;">
+                                            <div class="col-md-3">
+                                                <div class="legend_box" style="background-color:#ff0000;"></div>
+                                                <span class="legend_text">Selected MS/MS Peptide</span>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="legend_box" style="background-color:#ffc61c;"></div>
+                                                <span class="legend_text">Focused MS/MS Peptides</span>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="legend_box" style="background-color:#7bc45c;"></div>
+                                                <span class="legend_text">MS/MS Supported</span>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="legend_box" style="background-color:#645d23;"></div>
+                                                <span class="legend_text">No MS/MS support</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- FIND GENE!!! -->
+        <div class="modal" id="dialog-genefind" role="dialog" data-keyboard="false" data-backdrop="static">
+            <div class="modal-dialog" style="width:1000px;">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">Find Gene</h4>
+                    </div>
+                    <div class="modal-body">
+                        <div class="container-fluid" style="margin-left:15px;">
+                          <table id="jqGrid"></table>
+                          <div id="jqGridPager"></div>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer vspace15">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- SPECTRUM NEW WINDOW -->
+        <div class="modal" id="dialog-peplist" role="dialog" data-keyboard="false" data-backdrop="static">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title" id="spec_title">Peptide Spectrum</h4>
+                        <h5 class="modal-title" id="spec_score">(Score: 0, PEP: 0)</h5>
+                    </div>
+                    <div class="modal-body">
+                        <div class="container-fluid">
+                            <div class="row">
+                                <div class="col-centered pepholder" id="pepholder">
+                                    <!-- SPECTRUM GRAPH - RAPHAELJS -->
+                                </div>
+                                <div class="col-centered" style="width:470px">
+                                    <input id="slider-range" type="text" value="" data-slider-tooltip="hide" data-slider-min="0" data-slider-max="500" data-slider-step="5" data-slider-value="[0,500]"/>
+                                </div>
+                            </div>
+
+                            <!-- LEGENDAS -->
+                            <div class="container-fluid">
+                                <div style="position:relative; top:20px;">
+                                    <div class="row" style="text-align:center;">
+                                        <div class="col-sm-4">
+                                            <div class="legend_box" style="background-color:#3377ff;"></div>
+                                            <span class="legend_text">y-series</span>
+                                        </div>
+                                        <div class="col-sm-4">
+                                            <div class="legend_box" style="background-color:#66ff80;"></div>
+                                            <span class="legend_text">b-series</span>
+                                        </div>
+                                        <div class="col-sm-4">
+                                            <div class="legend_box" style="background-color:#ff5555;"></div>
+                                            <span class="legend_text">other series/modif.</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <div class="modal-footer vspace15">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- EXPRESSION NEW WINDOW -->
+        <div class="modal" id="dialog-explist" role="dialog" data-keyboard="false" data-backdrop="static">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title" id="exp_title">Peptide Expression</h4>
+                    </div>
+                    <div class="modal-body">
+                        <div class="container-fluid">
+                            <div class="row">
+                                <div class="col-centered pepholder">
+                                    <div class="panel panel-default" style="height: 65%">
+                                        <div class="panel-heading">Samples where peptide was detected</div>
+                                        <div class="panel-body" style="height: 80%; overflow-y: scroll;">
+                                            <div id="expholder_samples" style="height: 100%;">
+                                                <!-- EXPRESSION GRAPH -->
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="panel panel-default" style="height: 30%">
+                                        <div class="panel-heading">Genes where peptide was observed</div>
+                                        <div class="panel-body" style="height: 70%; overflow-y: scroll;">
+                                            <div id="expholder_genes" style="height: 100%;">
+                                                <!-- EXPRESSION GRAPH -->
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MENU CLICK SEQUENCE -->
+        <div class="container-fluid" id="sequence_menu">
+            <div class="row" id="sequence_menu">
+                <div class="btn-group-vertical btn-block" style="width:100%">
+                    <button type="button" class="btn btn-primary btn-fluid" onclick="PFAM_post('PFAM');">PFAM Domain Analysis</button>
+                    <button type="button" class="btn btn-primary btn-fluid" onclick="PFAM_post('UNIPROT');">UNIPROT Blast</button>
+                    <button type="button" class="btn btn-primary btn-fluid" onclick="PFAM_post('INTERPRO');">InterPro Analysis</button>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- PFAM SUBMIT FORM -->
+        <form action="http://pfam.xfam.org/search/sequence" method="post" id="PFAM_seqForm" target='_blank'>
+            <div>
+                <input type="hidden" name="seqOpts" value="">
+                <input type="hidden" name="ga" value="0">
+                <input type="hidden" name="evalue" value="1.0">
+                <input type="hidden" name="seq" id="PFAM_seq">
+            </div>
+        </form>
+
+        <!-- UNIPROT SUBMIT FORM -->
+        <form method="post" action="http://www.uniprot.org/blast/" id="UNIPROT_seqForm" target='_blank'>
+            <div>
+                <input value="" name="blastQuery" id="UNIPROT_seq" type="hidden">
+                <input value="uniprotkb" name="dataset" type="hidden">
+                <input value="10" name="threshold" type="hidden">
+                <input value="" name="matrix" type="hidden">
+                <input value="false" name="filter" type="hidden">
+                <input value="true" name="gapped" type="hidden">
+                <input value="250" name="numal" type="hidden">
+                <input value="yes" name="redirect" type="hidden">
+                <input value="no" name="landingPage" type="hidden">
+                <input value="" name="url2" type="hidden">
+            </div>
+        </form>
+
+
+        <!-- INTEPRO SUBMIT FORM -->
+        <form id="INTERPRO_seqForm" action="http://www.ebi.ac.uk/interpro/" method="post" target='_blank'>
+            <input id="INTERPRO_seq" name="queryString" type="hidden">
+        </form>
+
+        <!-- SCRIPTS -->
+        <script src="./scripts/jquery-2.1.0.min.js"></script>
+        <script src="./scripts/bootstrap.min.js"></script>
+        <script src="./scripts/bootstrap-slider.min.js"></script>
+        <script src="./scripts/jquery-ui-1.11.4.custom/jquery-ui.min.js"></script>
+        <script src="./scripts/raphael.js"></script>
+        <script src="./scripts/lzma_worker.js"></script>
+        <script src="./scripts/jquery.binarytransport.js"></script>
+        <script src="./INPUT/RESULTS/summary.js"></script>
+        <script src="./scripts/teste_dev_vis.js"></script>
+        <script src="./scripts/grid.locale-en.js"></script>
+        <script src="./scripts/jquery.jqGrid.min.js"></script>
+
+        <script>
+            //GLOBAL
+            var currentMousePos = { x: -1, y: -1 };
+            var selected_gene = '';
+
+            //JQUERY START
+            $(document).ready(function(){
+
+              var linkOpen = function ( cellvalue, options, rowObject ) {
+                return '<a href="#" style="color:blue;" onclick="$(\'#dialog-genefind\').modal(\'hide\');loadGene(\'' + cellvalue + '\');">' + cellvalue + '</div>';
+              };
+
+              $("#jqGrid").jqGrid({
+                datatype: "local",
+        				data: mydata,
+                height: 250,
+                colModel: [
+                  { label: 'Gene', name: 'gene', width: 40, key:true, formatter: linkOpen, sorttype:'string', searchoptions: {sopt:['cn']} },
+                  { label: '#Isoforms', name: 'nisoforms', width: 30, sorttype:'integer', searchoptions: {sopt:['eq', 'ne', 'ls', 'le','gt','ge']}},
+                  { label: '#Peptides', name: 'npeptides', width: 30, sorttype:'integer', searchoptions: {sopt:['eq', 'ne', 'ls', 'le','gt','ge']}}
+                ],
+                rowNum: 500,
+                viewrecords: true,
+                sortname: 'nisoforms',
+                sortorder: 'desc',
+                width: '900',
+                height: '500',
+                shrinkToFit: true,
+                pager: '#jqGridPager',
+              })
+              .jqGrid('filterToolbar', {
+                searchOnEnter: false,
+                searchOperators : true
+              });
+
+
+                ///////// Get mouse positions
+                $(document).mousemove(function(event) {
+                    currentMousePos.x = event.pageX;
+                    currentMousePos.y = event.pageY;
+                });
+
+                //////// Window resize
+                var a;
+                $(window).resize(function(){
+                    clearTimeout(a);
+                    a = setTimeout(function(){
+                        protbrowser_resize();
+                    }, 500);
+                });
+
+
+                ////////Show spectrum dialog
+                $('#dialog-peplist').on('shown.bs.modal', function() {
+                    if ( ActivePep ) {
+                        $( "#spec_title" ).html( "Peptide Spectrum: " +  ActivePep );
+                        $('#pepholder').html("");
+                        PepGraph_pre();
+                    }
+                    else {
+                        $('#dialog-peplist').modal('hide');
+                    }
+                });
+
+                ////////Show spectrum dialog
+                $('#dialog-explist').on('shown.bs.modal', function() {
+                    if ( ActivePep ) {
+                        $( "#exp_title" ).html( "Peptide Expression: " +  ActivePep );
+                        $('#expholder').html("");
+                        ExpGraph();
+                    }
+                    else {
+                        $('#dialog-explist').modal('hide');
+                    }
+                });
+
+
+                //slider from spectrum
+                slider = $( '#slider-range' ).slider();
+                slider.on( 'slide', function() {
+                    if (! ActivePep )
+                        $('#dialog-peplist').modal('hide');
+
+                    var xvals = slider.slider( 'getValue' );
+                    if ( xvals )
+                        PepGraph(xvals[0], xvals[1]);
+                });
+
+                $("#searchseq").keyup( function() {
+                    var query = $(this).val();
+                    query = query.replace(/\s+/g,'');
+
+                    if ( query ) {
+                        if ( Find_sequence(query) )
+                            $( "#stats_seqfind" ).html( "Pattern found" );
+                        else
+                            $( "#stats_seqfind" ).html( "No match" );
+                    }
+                    else {
+                        $( "#stats_seqfind" ).html( "" );
+                    }
+                });
+
+
+                //////// search gene --- open dialog
+                $('#searchgene').on('focus', function () {
+                  $('#dialog-genefind').modal('show');
+                  $('#gs_gene').val('').focus();
+                });
+
+                ////////// Click seq menu
+                //seqmenu
+                $( "#sequence_menu" ).hide();
+
+                $('#sequence_menu').mouseleave(function() {
+                    $('#sequence_menu').hide();
+                    $('.line_aa_normal').removeClass("line_aa_normal_hover");
+                    mouseover_sequence = null;
+                });
+
+                $( "#aligngrid" ).mouseleave(function() {
+                    if (! $('#sequence_menu').is(':hover')) {
+                        $('.line_aa_normal').removeClass("line_aa_normal_hover");
+                    }
+
+                  $('[tipo="line"]').popover('hide');
+                });
+
+                /////////// fit windows to screen
+                protbrowser_resize();
+            });
+
+
+            function lineClick() {
+                if (mouseover_sequence != null) {
+                    console.log('clicked');
+                    $('#sequence_menu').css({'left': currentMousePos.x - 5, 'top' : currentMousePos.y - 5});
+                    $('#sequence_menu').show();
+                }
+            }
+
+        </script>
+
+    </body>
+</html>
