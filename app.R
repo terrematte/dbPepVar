@@ -36,10 +36,6 @@ link_proteins <- function(val) {
 # ==== Global variables ===============================================================
 load("data/dbPepVar_snps.Rda")
 
-dbPepVar_snps <- dbPepVar_snps %>%
-    dplyr::select(c("Cancer_Type", "Hugo_Symbol", "Tumor_Sample_Barcode", "Refseq_protein", "Variant_Classification", 
-                    "HGVSp", "snp_id",  "Chromosome", "Start_Position", "End_Position", "band", "i_transcript_name", "NMD"))
-
 f <-  "data/dbPepVar_PTC_Peptides.tsv"
 dbPepVar <- vroom(f)  %>%
     dplyr::select(-c("Gene","Variant_Classification"))
@@ -67,6 +63,7 @@ dbPepVar <- dplyr::left_join(dbPepVar_snps, dbPepVar, by = by) %>%
         Sample = "Tumor_Sample_Barcode.x",
         Others_Samples = "Tumor_Sample_Barcode.y") %>%
     dplyr::mutate_if(is.factor, as.character)  %>%
+    dplyr::mutate_at(vars("Start_Position", "End_Position"), as.numeric) %>%
     dplyr::mutate_at(vars("Variant_Classification", "Cancer_Type", "Chromosome"), as.factor)  %>%
     dplyr::mutate(Variant_Classification =  forcats::fct_recode(Variant_Classification,
                                                        Missense = "Missense_Mutation",
@@ -135,12 +132,12 @@ ui <- fluidPage(
         In our approach, MS data is submitted to the dbPepVar variant and reference base separately. The outputs are compared 
         and filtered by the scores for each base. Using public MS data from four types of cancer, we mostly identified 
         cancer-specific SNPs, but shared mutations were also present in a lower amount.                               
-        "),
+        "), br(),
                                  icon("cog", lib = "glyphicon"), 
                                  em( "
         Click on legends of plots to activate or deactivate labels. Use ",  
                                      a("regex", href="cheatsheets_regex.pdf", target="_blank"), 
-                                     " to search in datatables."
+                                     " to search in datatables.", br(),
                                  )))
         ),
         fluidRow(
@@ -219,15 +216,15 @@ ui <- fluidPage(
         ),
         fluidRow(
             column(12, wellPanel(
-            h3("Citation:"),
-            c("Cunha,  L M; Terrematte, P C A, Fiúza, T S; Silva, V L; Kroll, J E; Souza, S J; Souza, G A. (2021)"),
+            h4("Citation:"),
+            c("LM Cunha, PCA Terrematte, TS Fiúza, VL Silva, JE Kroll, SJ de Souza, GA de Souza. (2021)"),
             em("\"A proteogenomics approach for analysis and identification of genetic variants in different types of cancer associated with the inefficiency of the Nonsense-Mediated Decay machinery\"."),
-            em("To be published."), br(),  br(),
+            c("To be published."), br(),  br(),
             h4("Authors:"),
             c("- Lucas Marques da Cunha¹"),br(),
             c("- Patrick Cesar A. Terrematte¹,"),br(),
             c("- Tayná da Silva Fiúza¹, "),br(),
-            c("- Vandeclécio L. da Silva1, "),br(),
+            c("- Vandeclécio L. da Silva¹, "),br(),
             c("- José Eduardo Kroll¹, "),br(),
             c("- Sandro José de Souza¹,²,"), br(),
             c("- Gustavo Antônio de Souza¹,³,"),br(),
@@ -253,7 +250,7 @@ ui <- fluidPage(
                                      selected = c("unique"),
                                      inline = TRUE),
                         checkboxGroupInput("show_vars_dbPepVar", 
-                                           "Select columns in dbPepVar to show",
+                                           "Select columns in dbPepVar:",
                                            names(dbPepVar), selected = names(dbPepVar)[c(1,2,4:11)]),
                     width = 3
                 ),
@@ -279,43 +276,43 @@ ui <- fluidPage(
             sidebarLayout(
                 sidebarPanel(
                     conditionalPanel(
-                        'input.tab_evidance === "BrCa evidence"',
+                        'input.tab_evidance === "BrCa"',
                         radioButtons("show_unique_BrCa", 
                                      "Show", 
                                      choices = list("Unique rows" = "unique" , "All rows" = "all"),  
                                      selected = c("all"),
                                      inline = TRUE),
-                        checkboxGroupInput("show_vars_BrCa", "Select columns in BrCa evidence to show:",
+                        checkboxGroupInput("show_vars_BrCa", "Select columns in BrCa evidence:",
                                            names(BrCa), selected = names(BrCa)[c(1:4,51,54)])
                     ),
                     conditionalPanel(
-                        'input.tab_evidance === "CrCa evidence"',
+                        'input.tab_evidance === "CrCa"',
                         radioButtons("show_unique_CrCa", 
                                      "Show", 
                                      choices = list("Unique rows" = "unique" , "All rows" = "all"),  
                                      selected = c("all"),
                                      inline = TRUE),
-                        checkboxGroupInput("show_vars_CrCa", "Select columns in CrCa evidence to show:",
+                        checkboxGroupInput("show_vars_CrCa", "Select columns in CrCa evidence:",
                                            names(CrCa), selected = names(CrCa)[c(1:4,47,50)])
                     ),
                     conditionalPanel(
-                        'input.tab_evidance === "OvCa evidence"',
+                        'input.tab_evidance === "OvCa"',
                         radioButtons("show_unique_OvCa", 
                                      "Show", 
                                      choices = list("Unique rows" = "unique" , "All rows" = "all"),  
                                      selected = c("all"),
                                      inline = TRUE),
-                        checkboxGroupInput("show_vars_OvCa", "Select columns in OvCa evidence to show:",
+                        checkboxGroupInput("show_vars_OvCa", "Select columns in OvCa evidence:",
                                            names(OvCa), selected = names(OvCa)[c(1:4,47,50)])
                     ),
                     conditionalPanel(
-                        'input.tab_evidance === "PrCa evidence"',
+                        'input.tab_evidance === "PrCa"',
                         radioButtons("show_unique_PrCa", 
                                      "Show", 
                                      choices = list("Unique rows" = "unique" , "All rows" = "all"),  
                                      selected = c("all"),
                                      inline = TRUE),
-                        checkboxGroupInput("show_vars_PrCa", "Select columns in PrCa evidence to show:",
+                        checkboxGroupInput("show_vars_PrCa", "Select columns in PrCa evidence:",
                                            names(PrCa), selected = names(PrCa)[c(1:4,51,54)])
                     ),
                     width = 3
@@ -323,25 +320,31 @@ ui <- fluidPage(
                 mainPanel(
                     tabsetPanel(
                         id = 'tab_evidance',
-                        tabPanel("BrCa evidence", DT::dataTableOutput("tb_BrCa")),
-                        tabPanel("CrCa evidence", DT::dataTableOutput("tb_CrCa")),
-                        tabPanel("OvCa evidence", DT::dataTableOutput("tb_OvCa")),
-                        tabPanel("PrCa evidence", DT::dataTableOutput("tb_PrCa"))
+                        tabPanel("BrCa", DT::dataTableOutput("tb_BrCa")),
+                        tabPanel("CrCa", DT::dataTableOutput("tb_CrCa")),
+                        tabPanel("OvCa", DT::dataTableOutput("tb_OvCa")),
+                        tabPanel("PrCa", DT::dataTableOutput("tb_PrCa"))
                     ),
                     width = 9
                 )
             )
         ),
-        # ==== Tab Spectrum Viewer ===============================================================
-        tabPanel('Spectrum Viewer',
+        # ==== Tab Proteogenomics Viewer ===============================================================
+        tabPanel('Proteogenomics Viewer',
                  fluidRow(
                      column(12, 
                             htmlOutput("frame")
                      )
+                 ),
+                 
+                 fluidRow(
+                     column(12, wellPanel(
+                         h4("Citation:"),
+                         c("JE Kroll, VL da Silva, SJ de Souza, GA de Souza. (2017)"),
+                         em("\"A tool for integrating genetic and mass spectrometry‐based peptide data: Proteogenomics Viewer: PV: A genome browser‐like tool, which includes MS data visualization and peptide identification parameters\"."),
+                         c("Bioessays 39 (7),"), a("https://doi.org/10.1002/bies.201700015", href="https://doi.org/10.1002/bies.201700015", target="_blank"),c("."), br(),  br()
                  )
-                 )
-    )
-    
+    ))))
 )
 
 # ==== server.R ===============================================================

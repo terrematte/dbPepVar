@@ -10,10 +10,11 @@ runApp(appDir = "~/dbPepVar/")
 
 # Load login and token of shinyapps.io account in a separated file added to .gitignore:
 # rsconnect::setAccountInfo(name='terrematte', token='xxxxxx', secret='xxxx')
-#source("setAccountInfo.R")
+# source("setAccountInfo.R")
+# options(rsconnect.max.bundle.files=100000)
 
 # Deploy to shinyapps.io 
-#deployApp()
+# deployApp()
 
 # UnDeploy of shinyapps.io 
 #forgetDeployment()
