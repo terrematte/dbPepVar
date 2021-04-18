@@ -744,7 +744,8 @@ server <- function(input, output) {
     output$frame <- renderUI({
         tags$iframe(
             seamless="seamless",
-            src="dbPepVar.ms/index.html", height='1000', width='100%',
+            src="dbPepVar.pv/index.html", height='1000', width='100%',
+            #src="http://hungria.imd.ufrn.br/~terrematte/dbPepVar.pv/index.html", height='1000', width='100%',
             style="border:0;")
     })
 }
