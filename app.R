@@ -40,13 +40,6 @@ f <-  "data/dbPepVar_PTC_Peptides.tsv"
 dbPepVar <- vroom(f)  %>%
     dplyr::select(-c("Gene","Variant_Classification"))
 
-# ==== Load variables ===============================================================
-BrCa <-  vroom("data/evidence_dbPepVar.BrCa.txt")
-CrCa <-  vroom("data/evidence_dbPepVar.CrCa.txt")
-OvCa <-  vroom("data/evidence_dbPepVar.OvCa.txt")
-PrCa <-  vroom("data/evidence_dbPepVar.PrCa.txt")
-
-
 # Merge data
 by <- c("Cancer_Type", "Refseq_protein", "snp_id")
 dbPepVar <- dplyr::left_join(dbPepVar_snps, dbPepVar, by = by) %>%
@@ -66,65 +59,107 @@ dbPepVar <- dplyr::left_join(dbPepVar_snps, dbPepVar, by = by) %>%
     dplyr::mutate_at(vars("Start_Position", "End_Position"), as.numeric) %>%
     dplyr::mutate_at(vars("Variant_Classification", "Cancer_Type", "Chromosome"), as.factor)  %>%
     dplyr::mutate(Variant_Classification =  forcats::fct_recode(Variant_Classification,
-                                                       Missense = "Missense_Mutation",
-                                                       Frameshift = "Frame_Shift_Del",
-                                                       Nonsense = "Nonsense_Mutation",
-                                                       Nonstop = "Nonstop_Mutation",
-                                                       Indel = "In_Frame_Del") )  
+                                                                Missense = "Missense_Mutation",
+                                                                Frameshift = "Frame_Shift_Del",
+                                                                Nonsense = "Nonsense_Mutation",
+                                                                Nonstop = "Nonstop_Mutation",
+                                                                Indel = "In_Frame_Del") )  
 
 props <- c("Gly" = "Non-Polar",
-"Ala" = "Non-Polar",
-"Pro" = "Non-Polar",
-"Val" = "Non-Polar",
-"Leu" = "Non-Polar",
-"Ile" = "Non-Polar",
-"Met" = "Non-Polar",
-"Trp" = "Aromatic",
-"Phe" = "Aromatic",
-"Tyr" = "Aromatic",
-"Ser" = "P.Neutral",
-"Thr" = "P.Uncharged",
-"Cys" = "P.Uncharged",
-"Asn" = "P.Uncharged",
-"Gln" = "P.Uncharged",
-"Lys" = "P.Basic",
-"Arg" = "P.Basic",
-"His" = "P.Basic",
-"Glu" = "P.Acid",
-"Asp" = "P.Acid")
+           "Ala" = "Non-Polar",
+           "Pro" = "Non-Polar",
+           "Val" = "Non-Polar",
+           "Leu" = "Non-Polar",
+           "Ile" = "Non-Polar",
+           "Met" = "Non-Polar",
+           "Trp" = "Aromatic",
+           "Phe" = "Aromatic",
+           "Tyr" = "Aromatic",
+           "Ser" = "P.Neutral",
+           "Thr" = "P.Uncharged",
+           "Cys" = "P.Uncharged",
+           "Asn" = "P.Uncharged",
+           "Gln" = "P.Uncharged",
+           "Lys" = "P.Basic",
+           "Arg" = "P.Basic",
+           "His" = "P.Basic",
+           "Glu" = "P.Acid",
+           "Asp" = "P.Acid")
+
+genes_nmd <- read.delim("data/nmd_reactome_genes.txt")
 
 dbPepVar <- dbPepVar %>%
-    dplyr::mutate(Prop_change = ifelse(nchar(dbPepVar$Change) > 7,  "Multiple", stringr::str_replace_all(Change, props))) %>%
-    dplyr::select(c("Cancer_Type", "Sample", "Others_Samples", "Gene", "GeneCards",  "Refseq_protein", "Protein_search",
+    dplyr::mutate(Prop_change = ifelse(nchar(dbPepVar$Change) > 7,  "Multiple", stringr::str_replace_all(Change, props)),
+                  NMD_gene =  (dbPepVar$Gene %in% genes_nmd$gene_name)) %>%
+    dplyr::select(c("Cancer_Type", "Sample", "Others_Samples", "Gene", "GeneCards", "Description", "Refseq_protein", "Protein_search",
                     "snp_id", "SNP_search", "Variant_Classification", "HGVSp", "Change", "Prop_change", "i_transcript_name", "Chromosome", "Start_Position", "End_Position", "band", 
-                    "NMD_gene", "Peptide", "PTC_gene", "Score", "Pep", "Size_Ref", "Size_Mut", "Pos_Mut", "Rate_Size_Prot", "Rate_Pos_Mut"))
+                    "NMD_gene", "Peptide", "PTC_gene", "Score", "Pep", "Size_Ref", "Size_Mut", "Pos_Mut", "Rate_Size_Prot", "Rate_Pos_Mut")) %>%
+    as.data.frame()
 
+# ==== Load evidence files ===============================================================
+BrCa <-  vroom("data/evidence_dbPepVar.BrCa.txt")
+CrCa <-  vroom("data/evidence_dbPepVar.CrCa.txt")
+OvCa <-  vroom("data/evidence_dbPepVar.OvCa.txt")
+PrCa <-  vroom("data/evidence_dbPepVar.PrCa.txt")
 
-rm(dbPepVar_snps,by, link_genecards, link_proteins, link_snps, f)
+dbPepVar_snp_genes <- dbPepVar %>%
+    dplyr::select(c("Gene", "GeneCards", "snp_id", "SNP_search")) %>%
+    dplyr::filter(!duplicated(Gene, snp_id))  %>%
+    dplyr::rename("id SNP" = "snp_id")
+
+cols1 <- c("Mutation Type", "Gene", "GeneCards", "id SNP", "SNP_search", "Sequence", "Length", "K Count", "R Count", "Modifications", "Modified sequence", "Oxidation (M) Probabilities", "Oxidation (M) Score Diffs", "Acetyl (Protein N-term)", "Oxidation (M)", "Missed cleavages", "Proteins", "Leading Proteins", "Leading Razor Protein", "Type", "Labeling State", "Raw file", "Fraction", "Experiment", "MS/MS m/z", "Charge", "m/z", "Mass", "Resolution", "Uncalibrated - Calibrated m/z [ppm]", "Uncalibrated - Calibrated m/z [Da]", "Mass Error [ppm]", "Mass Error [Da]", "Uncalibrated Mass Error [ppm]", "Uncalibrated Mass Error [Da]", "Max intensity m/z 0", "Max intensity m/z 1", "Retention time", "Retention length", "Calibrated retention time", "Calibrated retention time start", "Calibrated retention time finish", "Retention time calibration", "Match time difference", "Match m/z difference", "Match q-value", "Match score", "Number of data points", "Number of scans", "Number of isotopic peaks", "PIF", "Fraction of total spectrum", "Base peak fraction", "PEP", "MS/MS Count", "MS/MS Scan Number", "Score", "Delta score", "Combinatorics", "Ratio H/L", "Ratio H/L normalized", "Ratio H/L shift", "Intensity", "Intensity L", "Intensity H", "Reverse", "Potential contaminant", "id", "Protein group IDs", "Peptide ID", "Mod. peptide ID", "MS/MS IDs", "Best MS/MS", "AIF MS/MS IDs", "Oxidation (M) site IDs")
+cols2 <- c("Mutation Type", "Gene", "GeneCards", "id SNP", "SNP_search", "Sequence", "Length", "Modifications", "Modified sequence", "Oxidation (M) Probabilities", "Oxidation (M) Score Diffs", "Acetyl (Protein N-term)", "Oxidation (M)", "Missed cleavages", "Proteins", "Leading Proteins", "Leading Razor Protein", "Type", "Raw file", "Fraction", "Experiment", "MS/MS m/z", "Charge", "m/z", "Mass", "Resolution", "Uncalibrated - Calibrated m/z [ppm]", "Uncalibrated - Calibrated m/z [Da]", "Mass Error [ppm]", "Mass Error [Da]", "Uncalibrated Mass Error [ppm]", "Uncalibrated Mass Error [Da]", "Max intensity m/z 0", "Retention time", "Retention length", "Calibrated retention time", "Calibrated retention time start", "Calibrated retention time finish", "Retention time calibration", "Match time difference", "Match m/z difference", "Match q-value", "Match score", "Number of data points", "Number of scans", "Number of isotopic peaks", "PIF", "Fraction of total spectrum", "Base peak fraction", "PEP", "MS/MS Count", "MS/MS Scan Number", "Score", "Delta score", "Combinatorics", "Intensity", "Reverse", "Potential contaminant", "id", "Protein group IDs", "Peptide ID", "Mod. peptide ID", "MS/MS IDs", "Best MS/MS", "AIF MS/MS IDs", "Oxidation (M) site IDs")    
+
+BrCa <- BrCa %>%
+    left_join(dbPepVar_snp_genes[dbPepVar_snp_genes$`id SNP` %in% unique(BrCa$`id SNP`), ], 
+              BrCa, by = "id SNP") %>%
+    dplyr::mutate(SNP_search = link_snps(`id SNP`)) %>%
+    dplyr::select(cols1)
+
+PrCa <- PrCa %>%
+    left_join(dbPepVar_snp_genes[dbPepVar_snp_genes$`id SNP` %in% unique(PrCa$`id SNP`), ], 
+                  PrCa, by = "id SNP") %>%
+    dplyr::mutate(SNP_search = link_snps(`id SNP`)) %>%
+    dplyr::select(cols1)
+
+CrCa <- CrCa %>% 
+    left_join(dbPepVar_snp_genes[dbPepVar_snp_genes$`id SNP` %in% unique(CrCa$`id SNP`), ],
+                  CrCa, by = "id SNP") %>%
+    dplyr::mutate(SNP_search = link_snps(`id SNP`)) %>%
+    dplyr::select(cols2)
+
+OvCa <- OvCa %>% 
+    left_join(dbPepVar_snp_genes[dbPepVar_snp_genes$`id SNP` %in% unique(OvCa$`id SNP`), ],
+                  OvCa, by = "id SNP") %>%
+    dplyr::mutate(SNP_search = link_snps(`id SNP`)) %>%
+    dplyr::select(cols2)
+
+    
+rm(list=setdiff(ls(), c("dbPepVar","BrCa", "CrCa", "OvCa", "PrCa", "img_uri", "img_uri_favicon", "img_uri_icon")))
 
 
 # ==== ui.R ===============================================================
 ui <- fluidPage(
-        # Application title
-        titlePanel(
-            windowTitle = "dbPepVar",
-            title = tags$head(tags$link(rel="icon",
-                                        href=img_uri_favicon("icons/favicon.png"),
-                                        type="image/x-icon"))
-        ),
+    # Application title
+    titlePanel(
+        windowTitle = "dbPepVar",
+        title = tags$head(tags$link(rel="icon",
+                                    href=img_uri_favicon("icons/favicon.png"),
+                                    type="image/x-icon"))
+    ),
     navbarPage(
         img(src="favicon.png", align="right", width="35px"),
-
+        
         # ==== Tab dbPepVar ===============================================================
         tabPanel('dbPepVar',
-        fluidRow(
-            column(12, wellPanel(p("
+                 fluidRow(
+                     column(12, wellPanel(p("
         The dbPepVar is a new proteogenomics database which combines genetic variation information from dbSNP with 
         protein sequences from NCBI's RefSeq. We then perform a pan-cancer analysis (Ovarian, Colorectal, Breast and Prostate) 
         using public mass spectrometry datasets to identify genetic variations and genes present in the analyzed samples. 
         As results, were identified 5,449 variant peptides in ovarian (OvCa), 2,722 in prostate (PrCa), 2,392 in breast (BrCa) and 3,061 in colon-rectal cancer (CrCa)."),
-                                 
-                                 p("
+                                          
+                                          p("
         Compared to other approaches, our database contains a greater diversity of variants, including missense, 
         nonsense mutations, loss of termination codon, insertions, deletions (of any size), frameshifts and mutations that 
         alter the start translation. Besides, for each protein, only the variant tryptic peptides derived from enzymatic cleavage 
@@ -133,106 +168,106 @@ ui <- fluidPage(
         and filtered by the scores for each base. Using public MS data from four types of cancer, we mostly identified 
         cancer-specific SNPs, but shared mutations were also present in a lower amount.                               
         "), br(),
-                                 icon("cog", lib = "glyphicon"), 
-                                 em( "
+                                          icon("cog", lib = "glyphicon"), 
+                                          em( "
         Click on legends of plots to activate or deactivate labels. Use ",  
-                                     a("regex", href="cheatsheets_regex.pdf", target="_blank"), 
-                                     " to search in datatables.", br(),
-                                 )))
-        ),
-        fluidRow(
-            column(3,
-                   plotlyOutput("fig.barCancerSamples")
-            ),
-            column(3,
-                   plotlyOutput("fig.barSequenceCancer")
-            ),
-            column(3,
-                   plotlyOutput("fig.pieSNPCancer")
-            ),
-            column(3,
-                   plotlyOutput("fig.pieVarClassif")
-            )
-        ),
-        fluidRow(
-            column(12, wellPanel(c("Mutated Genes of Samples by Cancer")))
-        ),
-        fluidRow(
-            column(8, 
-                   plotlyOutput("fig.barGeneSamples")
-            ),
-            column(4, 
-                   DT::dataTableOutput("tb_data_GeneSamples")
-            ),
-        ),
-        fluidRow(
-            column(12, wellPanel(c("Mutated Genes of unique SNPs identified from Peptides")))
-        ),
-        fluidRow(
-            column(8, 
-                   plotlyOutput("fig.barGene")
-            ),
-            column(4, 
-                   DT::dataTableOutput("tb_data_Gene")
-            ),
-        ),
-        fluidRow(
-            column(12, wellPanel(c("Amino acid changes of Samples by Cancer")))
-        ),
-        fluidRow(
-            column(8, 
-                   plotlyOutput("fig.barChangeSamples")
-            ),
-            column(4, 
-                   DT::dataTableOutput("tb_data_ChangeSamples")
-            ),
-        ),
-        fluidRow(
-            column(12, wellPanel(c("Amino acid changes of unique SNPs identified from Peptides")))
-        ),
-        fluidRow(
-            column(8, 
-                   plotlyOutput("fig.barChange")
-            ),
-            column(4, 
-                   DT::dataTableOutput("tb_data_Change")
-            ),
-        ),
-        fluidRow(
-            column(12, wellPanel(c("Properties Changes of Samples by Cancer")))
-        ),
-        fluidRow(
-            column(12, 
-                   plotlyOutput("fig.barProperties")
-            )
-        ),
-        fluidRow(
-            column(12, wellPanel(c("Mutations of Samples per Chromosome by Cancer")))
-        ),
-        fluidRow(
-            column(12, 
-                   plotlyOutput("fig.barChromosome")
-            )
-        ),
-        fluidRow(
-            column(12, wellPanel(
-            h4("Citation:"),
-            c("LM Cunha, PCA Terrematte, TS Fiúza, VL Silva, JE Kroll, SJ de Souza, GA de Souza. (2021)"),
-            em("\"A proteogenomics approach for analysis and identification of genetic variants in different types of cancer associated with the inefficiency of the Nonsense-Mediated Decay machinery\"."),
-            c("To be published."), br(),  br(),
-            h4("Authors:"),
-            c("- Lucas Marques da Cunha¹"),br(),
-            c("- Patrick Cesar A. Terrematte¹,"),br(),
-            c("- Tayná da Silva Fiúza¹, "),br(),
-            c("- Vandeclécio L. da Silva¹, "),br(),
-            c("- José Eduardo Kroll¹, "),br(),
-            c("- Sandro José de Souza¹,²,"), br(),
-            c("- Gustavo Antônio de Souza¹,³,"),br(),
-            h4("Affiliations: "),
-            c("¹ Bioinformatics Multidisciplinary Environment - UFRN,"),br(),
-            c("² Brain Institute - UFRN. "),br(),
-            c("³ Department of Biochemistry - UFRN")))
-        )
+                                              a("regex", href="cheatsheets_regex.pdf", target="_blank"), 
+                                              " to search in datatables.", br(),
+                                          )))
+                 ),
+                 fluidRow(
+                     column(3,
+                            plotlyOutput("fig.barCancerSamples")
+                     ),
+                     column(3,
+                            plotlyOutput("fig.barSequenceCancer")
+                     ),
+                     column(3,
+                            plotlyOutput("fig.pieSNPCancer")
+                     ),
+                     column(3,
+                            plotlyOutput("fig.pieVarClassif")
+                     )
+                 ),
+                 fluidRow(
+                     column(12, wellPanel(c("Mutated Genes of Samples by Cancer")))
+                 ),
+                 fluidRow(
+                     column(8, 
+                            plotlyOutput("fig.barGeneSamples")
+                     ),
+                     column(4, 
+                            DT::dataTableOutput("tb_data_GeneSamples")
+                     ),
+                 ),
+                 fluidRow(
+                     column(12, wellPanel(c("Mutated Genes of unique SNPs identified from Peptides")))
+                 ),
+                 fluidRow(
+                     column(8, 
+                            plotlyOutput("fig.barGene")
+                     ),
+                     column(4, 
+                            DT::dataTableOutput("tb_data_Gene")
+                     ),
+                 ),
+                 fluidRow(
+                     column(12, wellPanel(c("Amino acid changes of Samples by Cancer")))
+                 ),
+                 fluidRow(
+                     column(8, 
+                            plotlyOutput("fig.barChangeSamples")
+                     ),
+                     column(4, 
+                            DT::dataTableOutput("tb_data_ChangeSamples")
+                     ),
+                 ),
+                 fluidRow(
+                     column(12, wellPanel(c("Amino acid changes of unique SNPs identified from Peptides")))
+                 ),
+                 fluidRow(
+                     column(8, 
+                            plotlyOutput("fig.barChange")
+                     ),
+                     column(4, 
+                            DT::dataTableOutput("tb_data_Change")
+                     ),
+                 ),
+                 fluidRow(
+                     column(12, wellPanel(c("Properties Changes of Samples by Cancer")))
+                 ),
+                 fluidRow(
+                     column(12, 
+                            plotlyOutput("fig.barProperties")
+                     )
+                 ),
+                 fluidRow(
+                     column(12, wellPanel(c("Mutations of Samples per Chromosome by Cancer")))
+                 ),
+                 fluidRow(
+                     column(12, 
+                            plotlyOutput("fig.barChromosome")
+                     )
+                 ),
+                 fluidRow(
+                     column(12, wellPanel(
+                         h4("Citation:"),
+                         c("LM Cunha, PCA Terrematte, TS Fiúza, VL Silva, JE Kroll, SJ de Souza, GA de Souza. (2021)"),
+                         em("\"A proteogenomics approach for analysis and identification of genetic variants in different types of cancer associated with the inefficiency of the Nonsense-Mediated Decay machinery\"."),
+                         c("To be published."), br(),  br(),
+                         h4("Authors:"),
+                         c("- Lucas Marques da Cunha¹"),br(),
+                         c("- Patrick Cesar A. Terrematte¹,"),br(),
+                         c("- Tayná da Silva Fiúza¹, "),br(),
+                         c("- Vandeclécio L. da Silva¹, "),br(),
+                         c("- José Eduardo Kroll¹, "),br(),
+                         c("- Sandro José de Souza¹,²,"), br(),
+                         c("- Gustavo Antônio de Souza¹,³,"),br(),
+                         h4("Affiliations: "),
+                         c("¹ Bioinformatics Multidisciplinary Environment - UFRN,"),br(),
+                         c("² Brain Institute - UFRN. "),br(),
+                         c("³ Department of Biochemistry - UFRN")))
+                 )
         ),
         # ==== Tab Variants ===============================================================
         tabPanel(
@@ -244,19 +279,19 @@ ui <- fluidPage(
             # Sidebar with a slider input for number of bins
             sidebarLayout(
                 sidebarPanel(
-                        radioButtons("show_unique_dbPepVar", 
-                                     "Show", 
-                                     choices = list("Unique rows" = "unique" , "All rows" = "all"),  
-                                     selected = c("unique"),
-                                     inline = TRUE),
-                        checkboxGroupInput("show_vars_dbPepVar", 
-                                           "Select columns in dbPepVar:",
-                                           names(dbPepVar), selected = names(dbPepVar)[c(1,2,4:11)]),
+                    radioButtons("show_unique_dbPepVar", 
+                                 "Show", 
+                                 choices = list("Unique rows" = "unique" , "All rows" = "all"),  
+                                 selected = c("unique"),
+                                 inline = TRUE),
+                    checkboxGroupInput("show_vars_dbPepVar", 
+                                       "Select columns in dbPepVar:",
+                                       names(dbPepVar), selected = names(dbPepVar)[c(1,2,4:12)]),
                     width = 3
                 ),
                 
                 mainPanel(
-                        DT::dataTableOutput("tb_dbPepVar"),
+                    DT::dataTableOutput("tb_dbPepVar"),
                     # tabsetPanel(
                     #     id = 'tab',
                     #     tabPanel("dbPepVar",)
@@ -283,7 +318,7 @@ ui <- fluidPage(
                                      selected = c("all"),
                                      inline = TRUE),
                         checkboxGroupInput("show_vars_BrCa", "Select columns in BrCa evidence:",
-                                           names(BrCa), selected = names(BrCa)[c(1:4,51,54)])
+                                           names(BrCa), selected = names(BrCa)[c(1:6,54,57)])
                     ),
                     conditionalPanel(
                         'input.tab_evidance === "CrCa"',
@@ -293,7 +328,7 @@ ui <- fluidPage(
                                      selected = c("all"),
                                      inline = TRUE),
                         checkboxGroupInput("show_vars_CrCa", "Select columns in CrCa evidence:",
-                                           names(CrCa), selected = names(CrCa)[c(1:4,47,50)])
+                                           names(CrCa), selected = names(CrCa)[c(1:6,50,53)])
                     ),
                     conditionalPanel(
                         'input.tab_evidance === "OvCa"',
@@ -303,7 +338,7 @@ ui <- fluidPage(
                                      selected = c("all"),
                                      inline = TRUE),
                         checkboxGroupInput("show_vars_OvCa", "Select columns in OvCa evidence:",
-                                           names(OvCa), selected = names(OvCa)[c(1:4,47,50)])
+                                           names(OvCa), selected = names(OvCa)[c(1:6,50,53)])
                     ),
                     conditionalPanel(
                         'input.tab_evidance === "PrCa"',
@@ -313,7 +348,7 @@ ui <- fluidPage(
                                      selected = c("all"),
                                      inline = TRUE),
                         checkboxGroupInput("show_vars_PrCa", "Select columns in PrCa evidence:",
-                                           names(PrCa), selected = names(PrCa)[c(1:4,51,54)])
+                                           names(PrCa), selected = names(PrCa)[c(1:6,54,57)])
                     ),
                     width = 3
                 ),
@@ -343,13 +378,14 @@ ui <- fluidPage(
                          c("JE Kroll, VL da Silva, SJ de Souza, GA de Souza. (2017)"),
                          em("\"A tool for integrating genetic and mass spectrometry‐based peptide data: Proteogenomics Viewer: PV: A genome browser‐like tool, which includes MS data visualization and peptide identification parameters\"."),
                          c("Bioessays 39 (7),"), a("https://doi.org/10.1002/bies.201700015", href="https://doi.org/10.1002/bies.201700015", target="_blank"),c("."), br(),  br()
-                 )
-    ))))
+                     )
+                     ))))
 )
 
 # ==== server.R ===============================================================
 server <- function(input, output) {
-
+    
+    
     data <- dbPepVar %>% 
         dplyr::select(c("Cancer_Type", "Gene", "Variant_Classification", "Refseq_protein",  "snp_id", "HGVSp", "Change", "Chromosome"))  %>% 
         unique() 
@@ -364,8 +400,10 @@ server <- function(input, output) {
         mutate(Cancer_Type = as.factor(Cancer_Type)) 
     
     dataChromosome <- dbPepVar %>% 
+        dplyr::mutate(Chromosome = ifelse(Chromosome %in% paste0(c(0:22, "X","Y")), as.character(Chromosome), "others_CTG")  ) %>% 
         count(Cancer_Type, Chromosome) %>% 
         tidyr::pivot_wider( names_from = "Cancer_Type", values_from = n)
+        
     
     ChangeTopSamples <- dbPepVar %>% 
         group_by(Change) %>% 
@@ -443,13 +481,13 @@ server <- function(input, output) {
                      text = ~n, textposition = 'auto',
                      marker = list(color = c('rgba(31, 119, 180, 1)', 'rgba(255, 127, 14, 1)',
                                              'rgba(44, 160, 44, 1)', 'rgba(214, 39, 40, 1)'))) %>%
-        layout(yaxis = list(title = '#Samples by Cancer Type'), 
-               xaxis = list(title = "Cancer_Type", tickangle = -45))
+            layout(yaxis = list(title = '#Samples by Cancer Type'), 
+                   xaxis = list(title = "Cancer_Type", tickangle = -45))
         
         t <- list(size = 10)
         p %>% layout(font=t)
     })
-
+    
     # Pie chart of Cancer_Type of Unique Sequence  ----
     output$fig.barSequenceCancer <- renderPlotly({
         p <- plot_ly(data = dataSequenceCancer, x = ~Cancer_Type, y = ~n, type = 'bar',
@@ -461,7 +499,7 @@ server <- function(input, output) {
         t <- list(size = 10)
         p %>% layout(font=t)
     })
-
+    
     # Pie chart of Cancer_Type of Unique SNPs  ----
     output$fig.pieSNPCancer <- renderPlotly({
         p <- plot_ly() %>% 
@@ -551,7 +589,7 @@ server <- function(input, output) {
             add_trace(y = ~OvCa, name = 'OvCa') %>% 
             add_trace(y = ~PrCa, name = 'PrCa')  %>% 
             layout(yaxis = list(title = 'Count by Samples'), 
-                   xaxis = list(title = "Chromosome", tickangle = -45, ategoryorder = "array", categoryarray = paste0(c(0:22, "X","Y"))),
+                   xaxis = list(title = "Chromosome", tickangle = -45, ategoryorder = "array", categoryarray = paste0(c(0:22, "X","Y", "others_CTG"))),
                    barmode = 'group')
     })
     
@@ -663,7 +701,7 @@ server <- function(input, output) {
                 dbPepVar[ !duplicated(dbPepVar[, input$show_vars_dbPepVar]) , input$show_vars_dbPepVar, drop = FALSE]
             } else{
                 dbPepVar[ , input$show_vars_dbPepVar, drop = FALSE]
-                } ,
+            } ,
             class = 'cell-border stripe',
             rownames = FALSE,
             filter = 'top',
