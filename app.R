@@ -9,7 +9,7 @@
 
 # ==== Loading library ===============================================================
 library(shiny)
-library(ggplot2)  # for the diamonds dataset
+library(ggplot2)  
 if(!require(DT)){ install.packages('DT') }
 if(!require(dplyr)){ install.packages('dplyr') }
 if(!require(tidyr)){ install.packages('tidyr') }
@@ -97,44 +97,43 @@ dbPepVar <- dbPepVar %>%
     as.data.frame()
 
 # ==== Load evidence files ===============================================================
-BrCa <-  vroom("data/evidence_dbPepVar.BrCa.txt")
-CrCa <-  vroom("data/evidence_dbPepVar.CrCa.txt")
-OvCa <-  vroom("data/evidence_dbPepVar.OvCa.txt")
-PrCa <-  vroom("data/evidence_dbPepVar.PrCa.txt")
+BrCa <-  vroom("data/evidence_dbPepVar.BrCa.txt") %>% dplyr::rename("snp_id" = "id SNP")
+CrCa <-  vroom("data/evidence_dbPepVar.CrCa.txt") %>% dplyr::rename("snp_id" = "id SNP")
+OvCa <-  vroom("data/evidence_dbPepVar.OvCa.txt") %>% dplyr::rename("snp_id" = "id SNP")
+PrCa <-  vroom("data/evidence_dbPepVar.PrCa.txt") %>% dplyr::rename("snp_id" = "id SNP")
 
 dbPepVar_snp_genes <- dbPepVar %>%
     dplyr::select(c("Gene", "GeneCards", "snp_id", "SNP_search")) %>%
-    dplyr::filter(!duplicated(Gene, snp_id))  %>%
-    dplyr::rename("id SNP" = "snp_id")
+    distinct()
 
-cols1 <- c("Mutation Type", "Gene", "GeneCards", "id SNP", "SNP_search", "Sequence", "Length", "K Count", "R Count", "Modifications", "Modified sequence", "Oxidation (M) Probabilities", "Oxidation (M) Score Diffs", "Acetyl (Protein N-term)", "Oxidation (M)", "Missed cleavages", "Proteins", "Leading Proteins", "Leading Razor Protein", "Type", "Labeling State", "Raw file", "Fraction", "Experiment", "MS/MS m/z", "Charge", "m/z", "Mass", "Resolution", "Uncalibrated - Calibrated m/z [ppm]", "Uncalibrated - Calibrated m/z [Da]", "Mass Error [ppm]", "Mass Error [Da]", "Uncalibrated Mass Error [ppm]", "Uncalibrated Mass Error [Da]", "Max intensity m/z 0", "Max intensity m/z 1", "Retention time", "Retention length", "Calibrated retention time", "Calibrated retention time start", "Calibrated retention time finish", "Retention time calibration", "Match time difference", "Match m/z difference", "Match q-value", "Match score", "Number of data points", "Number of scans", "Number of isotopic peaks", "PIF", "Fraction of total spectrum", "Base peak fraction", "PEP", "MS/MS Count", "MS/MS Scan Number", "Score", "Delta score", "Combinatorics", "Ratio H/L", "Ratio H/L normalized", "Ratio H/L shift", "Intensity", "Intensity L", "Intensity H", "Reverse", "Potential contaminant", "id", "Protein group IDs", "Peptide ID", "Mod. peptide ID", "MS/MS IDs", "Best MS/MS", "AIF MS/MS IDs", "Oxidation (M) site IDs")
-cols2 <- c("Mutation Type", "Gene", "GeneCards", "id SNP", "SNP_search", "Sequence", "Length", "Modifications", "Modified sequence", "Oxidation (M) Probabilities", "Oxidation (M) Score Diffs", "Acetyl (Protein N-term)", "Oxidation (M)", "Missed cleavages", "Proteins", "Leading Proteins", "Leading Razor Protein", "Type", "Raw file", "Fraction", "Experiment", "MS/MS m/z", "Charge", "m/z", "Mass", "Resolution", "Uncalibrated - Calibrated m/z [ppm]", "Uncalibrated - Calibrated m/z [Da]", "Mass Error [ppm]", "Mass Error [Da]", "Uncalibrated Mass Error [ppm]", "Uncalibrated Mass Error [Da]", "Max intensity m/z 0", "Retention time", "Retention length", "Calibrated retention time", "Calibrated retention time start", "Calibrated retention time finish", "Retention time calibration", "Match time difference", "Match m/z difference", "Match q-value", "Match score", "Number of data points", "Number of scans", "Number of isotopic peaks", "PIF", "Fraction of total spectrum", "Base peak fraction", "PEP", "MS/MS Count", "MS/MS Scan Number", "Score", "Delta score", "Combinatorics", "Intensity", "Reverse", "Potential contaminant", "id", "Protein group IDs", "Peptide ID", "Mod. peptide ID", "MS/MS IDs", "Best MS/MS", "AIF MS/MS IDs", "Oxidation (M) site IDs")    
+cols1 <- c("Mutation Type", "Gene", "GeneCards", "snp_id", "SNP_search", "Sequence", "Length", "K Count", "R Count", "Modifications", "Modified sequence", "Oxidation (M) Probabilities", "Oxidation (M) Score Diffs", "Acetyl (Protein N-term)", "Oxidation (M)", "Missed cleavages", "Proteins", "Leading Proteins", "Leading Razor Protein", "Type", "Labeling State", "Raw file", "Fraction", "Experiment", "MS/MS m/z", "Charge", "m/z", "Mass", "Resolution", "Uncalibrated - Calibrated m/z [ppm]", "Uncalibrated - Calibrated m/z [Da]", "Mass Error [ppm]", "Mass Error [Da]", "Uncalibrated Mass Error [ppm]", "Uncalibrated Mass Error [Da]", "Max intensity m/z 0", "Max intensity m/z 1", "Retention time", "Retention length", "Calibrated retention time", "Calibrated retention time start", "Calibrated retention time finish", "Retention time calibration", "Match time difference", "Match m/z difference", "Match q-value", "Match score", "Number of data points", "Number of scans", "Number of isotopic peaks", "PIF", "Fraction of total spectrum", "Base peak fraction", "PEP", "MS/MS Count", "MS/MS Scan Number", "Score", "Delta score", "Combinatorics", "Ratio H/L", "Ratio H/L normalized", "Ratio H/L shift", "Intensity", "Intensity L", "Intensity H", "Reverse", "Potential contaminant", "id", "Protein group IDs", "Peptide ID", "Mod. peptide ID", "MS/MS IDs", "Best MS/MS", "AIF MS/MS IDs", "Oxidation (M) site IDs")
+cols2 <- c("Mutation Type", "Gene", "GeneCards", "snp_id", "SNP_search", "Sequence", "Length", "Modifications", "Modified sequence", "Oxidation (M) Probabilities", "Oxidation (M) Score Diffs", "Acetyl (Protein N-term)", "Oxidation (M)", "Missed cleavages", "Proteins", "Leading Proteins", "Leading Razor Protein", "Type", "Raw file", "Fraction", "Experiment", "MS/MS m/z", "Charge", "m/z", "Mass", "Resolution", "Uncalibrated - Calibrated m/z [ppm]", "Uncalibrated - Calibrated m/z [Da]", "Mass Error [ppm]", "Mass Error [Da]", "Uncalibrated Mass Error [ppm]", "Uncalibrated Mass Error [Da]", "Max intensity m/z 0", "Retention time", "Retention length", "Calibrated retention time", "Calibrated retention time start", "Calibrated retention time finish", "Retention time calibration", "Match time difference", "Match m/z difference", "Match q-value", "Match score", "Number of data points", "Number of scans", "Number of isotopic peaks", "PIF", "Fraction of total spectrum", "Base peak fraction", "PEP", "MS/MS Count", "MS/MS Scan Number", "Score", "Delta score", "Combinatorics", "Intensity", "Reverse", "Potential contaminant", "id", "Protein group IDs", "Peptide ID", "Mod. peptide ID", "MS/MS IDs", "Best MS/MS", "AIF MS/MS IDs", "Oxidation (M) site IDs")
 
 BrCa <- BrCa %>%
-    left_join(dbPepVar_snp_genes[dbPepVar_snp_genes$`id SNP` %in% unique(BrCa$`id SNP`), ], 
-              BrCa, by = "id SNP") %>%
-    dplyr::mutate(SNP_search = link_snps(`id SNP`)) %>%
-    dplyr::select(cols1)
+    left_join(dbPepVar_snp_genes[dbPepVar_snp_genes$snp_id %in% unique(BrCa$snp_id), ],
+              BrCa, by = "snp_id") %>%
+    dplyr::mutate(SNP_search = link_snps(snp_id)) %>%
+    dplyr::select(all_of(cols1))
 
 PrCa <- PrCa %>%
-    left_join(dbPepVar_snp_genes[dbPepVar_snp_genes$`id SNP` %in% unique(PrCa$`id SNP`), ], 
-                  PrCa, by = "id SNP") %>%
-    dplyr::mutate(SNP_search = link_snps(`id SNP`)) %>%
-    dplyr::select(cols1)
+    left_join(dbPepVar_snp_genes[dbPepVar_snp_genes$snp_id %in% unique(PrCa$snp_id), ],
+                  PrCa, by = "snp_id") %>%
+    dplyr::mutate(SNP_search = link_snps(snp_id)) %>%
+    dplyr::select(all_of(cols1))
 
-CrCa <- CrCa %>% 
-    left_join(dbPepVar_snp_genes[dbPepVar_snp_genes$`id SNP` %in% unique(CrCa$`id SNP`), ],
-                  CrCa, by = "id SNP") %>%
-    dplyr::mutate(SNP_search = link_snps(`id SNP`)) %>%
-    dplyr::select(cols2)
+CrCa <- CrCa %>%
+    left_join(dbPepVar_snp_genes[dbPepVar_snp_genes$snp_id %in% unique(CrCa$snp_id), ],
+                  CrCa, by = "snp_id") %>%
+    dplyr::mutate(SNP_search = link_snps(snp_id)) %>%
+    dplyr::select(all_of(cols2))
 
-OvCa <- OvCa %>% 
-    left_join(dbPepVar_snp_genes[dbPepVar_snp_genes$`id SNP` %in% unique(OvCa$`id SNP`), ],
-                  OvCa, by = "id SNP") %>%
-    dplyr::mutate(SNP_search = link_snps(`id SNP`)) %>%
-    dplyr::select(cols2)
+OvCa <- OvCa %>%
+    left_join(dbPepVar_snp_genes[dbPepVar_snp_genes$snp_id %in% unique(OvCa$snp_id), ],
+                  OvCa, by = "snp_id") %>%
+    dplyr::mutate(SNP_search = link_snps(snp_id)) %>%
+    dplyr::select(all_of(cols2))
 
-    
+
 rm(list=setdiff(ls(), c("dbPepVar","BrCa", "CrCa", "OvCa", "PrCa", "img_uri", "img_uri_favicon", "img_uri_icon")))
 
 
