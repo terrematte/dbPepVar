@@ -112,25 +112,29 @@ cols2 <- c("Mutation Type", "Gene", "GeneCards", "snp_id", "SNP_search", "Sequen
 BrCa <- BrCa %>%
     left_join(dbPepVar_snp_genes[dbPepVar_snp_genes$snp_id %in% unique(BrCa$snp_id), ],
               BrCa, by = "snp_id") %>%
-    dplyr::mutate(SNP_search = link_snps(snp_id)) %>%
+    dplyr::mutate(Gene = ifelse(is.na(Gene), "--", as.character(Gene)),
+                  SNP_search = link_snps(snp_id)) %>%
     dplyr::select(all_of(cols1))
 
 PrCa <- PrCa %>%
     left_join(dbPepVar_snp_genes[dbPepVar_snp_genes$snp_id %in% unique(PrCa$snp_id), ],
                   PrCa, by = "snp_id") %>%
-    dplyr::mutate(SNP_search = link_snps(snp_id)) %>%
+    dplyr::mutate(Gene = ifelse(is.na(Gene), "--", as.character(Gene)),
+                  SNP_search = link_snps(snp_id)) %>%
     dplyr::select(all_of(cols1))
 
 CrCa <- CrCa %>%
     left_join(dbPepVar_snp_genes[dbPepVar_snp_genes$snp_id %in% unique(CrCa$snp_id), ],
                   CrCa, by = "snp_id") %>%
-    dplyr::mutate(SNP_search = link_snps(snp_id)) %>%
+    dplyr::mutate(Gene = ifelse(is.na(Gene), "--", as.character(Gene)),
+                  SNP_search = link_snps(snp_id)) %>%
     dplyr::select(all_of(cols2))
 
 OvCa <- OvCa %>%
     left_join(dbPepVar_snp_genes[dbPepVar_snp_genes$snp_id %in% unique(OvCa$snp_id), ],
                   OvCa, by = "snp_id") %>%
-    dplyr::mutate(SNP_search = link_snps(snp_id)) %>%
+    dplyr::mutate(Gene = ifelse(is.na(Gene), "--", as.character(Gene)),
+                  SNP_search = link_snps(snp_id)) %>%
     dplyr::select(all_of(cols2))
 
 
@@ -602,12 +606,14 @@ server <- function(input, output) {
     # General options for all tables ----
     list.options <- list(
         pageLength = 10,
-        lengthMenu = c(10, 25, 50, 100),
+        lengthMenu =  list(c(10, 25, 50, 100, -1), 
+                           c('10', '25', '50','100', 'All')),
+        paging = T,
         search = list(regex = TRUE),
         searchHighlight = TRUE,
         colReorder = TRUE,
         orientation ='landscape',
-        dom = "<'row'<'col-md-6'l><'col-md-3'B><'col-md-3'f>><'row'<'col-md-12't>><'row'<'col-md-3'i><'col-md-6'><'col-md-3'p>>",
+        dom = "<'row'<'col-md-3'l><'col-md-6'B><'col-md-3'f>><'row'<'col-md-12't>><'row'<'col-md-3'i><'col-md-1'><'col-md-8'p>>",
         #dom = 'lBfrtip',
         buttons =
             list(
@@ -617,9 +623,19 @@ server <- function(input, output) {
                      orientation = 'landscape',
                      filename = 'dbPepVar'
                 ),
-                list(extend = 'csv',
-                     text = '<span class="glyphicon glyphicon-download-alt"></span>',
-                     filename = 'dbPepVar'
+                list(extend = "csv", 
+                     text = '<span class="glyphicon glyphicon-download-alt"></span> Current Page (csv)', 
+                     filename = "dbPepVar_page",
+                     exportOptions = list(
+                         modifier = list(page = "current")
+                     )
+                ),
+                list(extend = "csv", 
+                     text = '<span class="glyphicon glyphicon-download-alt"></span> All Pages (csv)', 
+                     filename = "dbPepVar_page",
+                     exportOptions = list(
+                         modifier = list(page = "all")
+                     )
                 )
             )
     )
