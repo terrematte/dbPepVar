@@ -97,10 +97,10 @@ dbPepVar <- dbPepVar %>%
     as.data.frame()
 
 # ==== Load evidence files ===============================================================
-BrCa <-  vroom("data/evidence_dbPepVar.BrCa.txt") %>% dplyr::rename("snp_id" = "id SNP")
-CrCa <-  vroom("data/evidence_dbPepVar.CrCa.txt") %>% dplyr::rename("snp_id" = "id SNP")
-OvCa <-  vroom("data/evidence_dbPepVar.OvCa.txt") %>% dplyr::rename("snp_id" = "id SNP")
-PrCa <-  vroom("data/evidence_dbPepVar.PrCa.txt") %>% dplyr::rename("snp_id" = "id SNP")
+BrCa <-  vroom("data/evidence.dbPepVar.BrCa.txt") %>% dplyr::rename("snp_id" = "id SNP")
+CrCa <-  vroom("data/evidence.dbPepVar.CrCa.txt") %>% dplyr::rename("snp_id" = "id SNP")
+OvCa <-  vroom("data/evidence.dbPepVar.OvCa.txt") %>% dplyr::rename("snp_id" = "id SNP")
+PrCa <-  vroom("data/evidence.dbPepVar.PrCa.txt") %>% dplyr::rename("snp_id" = "id SNP")
 
 dbPepVar_snp_genes <- dbPepVar %>%
     dplyr::select(c("Gene", "GeneCards", "snp_id", "SNP_search")) %>%
