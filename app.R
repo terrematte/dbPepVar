@@ -48,7 +48,6 @@ dbPepVar <- dplyr::left_join(dbPepVar_snps, dbPepVar, by = by) %>%
         SNP_search = link_snps(snp_id),
         Protein_search = link_proteins(Refseq_protein),
         Pep = round(Pep, digits = 3),
-        NMD_gene = ifelse(NMD, "TRUE", "FALSE"),
         PTC_gene = ifelse(PTC == 1, "TRUE", "FALSE"),
         Change =  gsub('[0-9]+', '>', gsub('p.', '', HGVSp, fixed = T))) %>%
     dplyr::rename(          
@@ -63,7 +62,8 @@ dbPepVar <- dplyr::left_join(dbPepVar_snps, dbPepVar, by = by) %>%
                                                                 Frameshift = "Frame_Shift_Del",
                                                                 Nonsense = "Nonsense_Mutation",
                                                                 Nonstop = "Nonstop_Mutation",
-                                                                Indel = "In_Frame_Del") )  
+                                                                Indel = "In_Frame_Del",
+                                                                "5'|3'_utr" = "5'UTR" ) )  
 
 props <- c("Gly" = "Non-Polar",
            "Ala" = "Non-Polar",
@@ -91,12 +91,14 @@ genes_nmd <- read.delim("data/nmd_reactome_genes.txt")
 dbPepVar <- dbPepVar %>%
     dplyr::mutate(Prop_change = ifelse(nchar(dbPepVar$Change) > 7,  "Multiple", stringr::str_replace_all(Change, props)),
                   NMD_gene =  (dbPepVar$Gene %in% genes_nmd$gene_name)) %>%
-    dplyr::select(c("Cancer_Type", "Sample", "Others_Samples", "Gene", "GeneCards", "Description", "Refseq_protein", "Protein_search",
-                    "snp_id", "SNP_search", "Variant_Classification", "HGVSp", "Change", "Prop_change", "i_transcript_name", "Chromosome", "Start_Position", "End_Position", "band", 
+    dplyr::select(c("Cancer_Type", "Sample", "Others_Samples", "Gene", "GeneCards", "description", "Refseq_protein", "Protein_search",
+                    "snp_id", "SNP_search", "Variant_Classification", "HGVSp", "Change", "Prop_change", "Chromosome", "Start_Position", "End_Position",  
                     "NMD_gene", "Peptide", "PTC_gene", "Score", "Pep", "Size_Ref", "Size_Mut", "Pos_Mut", "Rate_Size_Prot", "Rate_Pos_Mut")) %>%
     as.data.frame()
 
 # ==== Load evidence files ===============================================================
+
+
 BrCa <-  vroom("data/evidence.dbPepVar.BrCa.txt") %>% dplyr::rename("snp_id" = "id SNP")
 CrCa <-  vroom("data/evidence.dbPepVar.CrCa.txt") %>% dplyr::rename("snp_id" = "id SNP")
 OvCa <-  vroom("data/evidence.dbPepVar.OvCa.txt") %>% dplyr::rename("snp_id" = "id SNP")
@@ -108,6 +110,11 @@ dbPepVar_snp_genes <- dbPepVar %>%
 
 cols1 <- c("Mutation Type", "Gene", "GeneCards", "snp_id", "SNP_search", "Sequence", "Length", "K Count", "R Count", "Modifications", "Modified sequence", "Oxidation (M) Probabilities", "Oxidation (M) Score Diffs", "Acetyl (Protein N-term)", "Oxidation (M)", "Missed cleavages", "Proteins", "Leading Proteins", "Leading Razor Protein", "Type", "Labeling State", "Raw file", "Fraction", "Experiment", "MS/MS m/z", "Charge", "m/z", "Mass", "Resolution", "Uncalibrated - Calibrated m/z [ppm]", "Uncalibrated - Calibrated m/z [Da]", "Mass Error [ppm]", "Mass Error [Da]", "Uncalibrated Mass Error [ppm]", "Uncalibrated Mass Error [Da]", "Max intensity m/z 0", "Max intensity m/z 1", "Retention time", "Retention length", "Calibrated retention time", "Calibrated retention time start", "Calibrated retention time finish", "Retention time calibration", "Match time difference", "Match m/z difference", "Match q-value", "Match score", "Number of data points", "Number of scans", "Number of isotopic peaks", "PIF", "Fraction of total spectrum", "Base peak fraction", "PEP", "MS/MS Count", "MS/MS Scan Number", "Score", "Delta score", "Combinatorics", "Ratio H/L", "Ratio H/L normalized", "Ratio H/L shift", "Intensity", "Intensity L", "Intensity H", "Reverse", "Potential contaminant", "id", "Protein group IDs", "Peptide ID", "Mod. peptide ID", "MS/MS IDs", "Best MS/MS", "AIF MS/MS IDs", "Oxidation (M) site IDs")
 cols2 <- c("Mutation Type", "Gene", "GeneCards", "snp_id", "SNP_search", "Sequence", "Length", "Modifications", "Modified sequence", "Oxidation (M) Probabilities", "Oxidation (M) Score Diffs", "Acetyl (Protein N-term)", "Oxidation (M)", "Missed cleavages", "Proteins", "Leading Proteins", "Leading Razor Protein", "Type", "Raw file", "Fraction", "Experiment", "MS/MS m/z", "Charge", "m/z", "Mass", "Resolution", "Uncalibrated - Calibrated m/z [ppm]", "Uncalibrated - Calibrated m/z [Da]", "Mass Error [ppm]", "Mass Error [Da]", "Uncalibrated Mass Error [ppm]", "Uncalibrated Mass Error [Da]", "Max intensity m/z 0", "Retention time", "Retention length", "Calibrated retention time", "Calibrated retention time start", "Calibrated retention time finish", "Retention time calibration", "Match time difference", "Match m/z difference", "Match q-value", "Match score", "Number of data points", "Number of scans", "Number of isotopic peaks", "PIF", "Fraction of total spectrum", "Base peak fraction", "PEP", "MS/MS Count", "MS/MS Scan Number", "Score", "Delta score", "Combinatorics", "Intensity", "Reverse", "Potential contaminant", "id", "Protein group IDs", "Peptide ID", "Mod. peptide ID", "MS/MS IDs", "Best MS/MS", "AIF MS/MS IDs", "Oxidation (M) site IDs")
+
+names(BrCa) <- cols1[-c(2,3,5)]
+names(CrCa) <- cols2[-c(2,3,5)]
+names(OvCa) <- cols2[-c(2,3,5)]
+names(PrCa) <- cols1[-c(2,3,5)]
 
 BrCa <- BrCa %>%
     left_join(dbPepVar_snp_genes[dbPepVar_snp_genes$snp_id %in% unique(BrCa$snp_id), ],
