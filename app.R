@@ -167,7 +167,8 @@ ui <- fluidPage(
         The dbPepVar is a new proteogenomics database which combines genetic variation information from dbSNP with 
         protein sequences from NCBI's RefSeq. We then perform a pan-cancer analysis (Ovarian, Colorectal, Breast and Prostate) 
         using public mass spectrometry datasets to identify genetic variations and genes present in the analyzed samples. 
-        As results, were identified 5,449 variant peptides in ovarian (OvCa), 2,722 in prostate (PrCa), 2,392 in breast (BrCa) and 3,061 in colon-rectal cancer (CrCa)."),
+        As results, were identified 3,726 variant peptides in ovarian (OvCa),  2,543 in prostate (PrCa), 2,661 in breast (BrCa) and 2,411 in colon-rectal cancer (CrCa)."),
+                                           
                                           
                                           p("
         Compared to other approaches, our database contains a greater diversity of variants, including missense, 
@@ -401,7 +402,7 @@ server <- function(input, output) {
         unique() 
     
     dataSequenceCancer <- cbind(Cancer_Type = c("BrCa", "CrCa", "OvCa", "PrCa"),
-                                combine(count(BrCa, Sequence) %>% count(), 
+                                vctrs::vec_c(count(BrCa, Sequence) %>% count(), 
                                         count(CrCa, Sequence) %>% count(), 
                                         count(OvCa, Sequence) %>% count(),
                                         count(PrCa, Sequence) %>% count()))
