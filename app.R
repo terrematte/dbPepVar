@@ -416,7 +416,7 @@ server <- function(input, output) {
         tidyr::pivot_wider( names_from = "Cancer_Type", values_from = n)
         
     
-    ChangeTopSamples <- dbPepVar %>% 
+    ChangeTopSamples <- dbPepVar %>%
         group_by(Change) %>% 
         count() %>% 
         arrange(desc(n)) %>% 
@@ -439,6 +439,8 @@ server <- function(input, output) {
         pull(.)
     
     data_Change <- data %>% 
+        dplyr::select(c("Cancer_Type", "snp_id", "Change"))  %>%
+        unique() %>% 
         group_by(Change, Cancer_Type) %>% 
         count()  %>% 
         dplyr::filter(Change %in% ChangeTop) %>% 
@@ -466,7 +468,9 @@ server <- function(input, output) {
         dplyr::select(Gene) %>%
         pull(.)
     
-    data_Gene <- data %>% 
+    data_Gene <- data %>%
+        dplyr::select(c("Cancer_Type", "snp_id", "Gene"))  %>%
+        unique() %>% 
         group_by(Gene, Cancer_Type) %>% 
         count()  %>% 
         dplyr::filter(Gene %in% GeneTop) %>% 
@@ -649,7 +653,7 @@ server <- function(input, output) {
     )
     
     
-    # table of Amino acid change by SNPs ----
+    # table of Amino acid change by Sample ----
     output$tb_data_ChangeSamples <- DT::renderDataTable({
         DT::datatable(
             dbPepVar %>% 
@@ -670,6 +674,9 @@ server <- function(input, output) {
     output$tb_data_Change <- DT::renderDataTable({
         DT::datatable(
             data %>% 
+                #dplyr::select(c("Cancer_Type", "Gene", "Variant_Classification", "Refseq_protein",  "snp_id", "HGVSp", "Change", "Chromosome"))  %>%
+                dplyr::select(c("Cancer_Type", "snp_id", "Change"))  %>% 
+                unique() %>% 
                 group_by(Cancer_Type, Change) %>% 
                 count() %>% arrange(desc(n)),
             class = 'cell-border stripe',
@@ -687,6 +694,9 @@ server <- function(input, output) {
     output$tb_data_Gene <- DT::renderDataTable({
         DT::datatable(
             data %>% 
+                #dplyr::select(c("Cancer_Type", "Gene", "Variant_Classification", "Refseq_protein",  "snp_id", "HGVSp", "Change", "Chromosome"))  %>%
+                dplyr::select(c("Cancer_Type", "snp_id", "Gene"))  %>% 
+                unique() %>% 
                 group_by(Cancer_Type, Gene) %>% 
                 count() %>% arrange(desc(n)),
             class = 'cell-border stripe',
