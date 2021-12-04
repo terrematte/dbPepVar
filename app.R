@@ -36,7 +36,7 @@ link_proteins <- function(val) {
 # ==== Global variables ===============================================================
 load("data/dbPepVar_snps.Rda")
 
-f <-  "data/dbPepVar_PTC_Peptides.tsv"
+f <-  "data/dbPepVar_PTC_Peptides.tsv" 
 dbPepVar <- vroom(f)  %>%
     dplyr::select(-c("Gene","Variant_Classification"))
 
