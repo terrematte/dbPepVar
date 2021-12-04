@@ -36,18 +36,19 @@ link_proteins <- function(val) {
 # ==== Global variables ===============================================================
 load("data/dbPepVar_snps.Rda")
 
-f <-  "data/dbPepVar_PTC_Peptides.tsv" 
+f <-  "data/dbPepVar_PTC_Peptides.tsv"
 dbPepVar <- vroom(f)  %>%
     dplyr::select(-c("Gene","Variant_Classification"))
 
 # Merge data
 by <- c("Cancer_Type", "Refseq_protein", "snp_id")
+
 dbPepVar <- dplyr::left_join(dbPepVar_snps, dbPepVar, by = by) %>%
     dplyr::mutate(
         GeneCards = link_genecards(Hugo_Symbol),
         SNP_search = link_snps(snp_id),
         Protein_search = link_proteins(Refseq_protein),
-        Pep = round(Pep, digits = 3),
+        #Pep = round(Pep, digits = 3),
         PTC_gene = ifelse(PTC == 1, "TRUE", "FALSE"),
         Change =  gsub('[0-9]+', '>', gsub('p.', '', HGVSp, fixed = T))) %>%
     dplyr::rename(          
@@ -264,19 +265,19 @@ ui <- fluidPage(
                      column(12, wellPanel(
                          h4("Citation:"),
                          c("LM Cunha, PCA Terrematte, TS Fiúza, VL Silva, JE Kroll, SJ de Souza, GA de Souza. (2021)"),
-                         em("\"A proteogenomics approach for analysis and identification of genetic variants in different types of cancer associated with the inefficiency of the Nonsense-Mediated Decay machinery\"."),
+                         em("\"Assessing Nonsense-Mediated Decay machinery mutations in cancer peptide landscapes through a novel proteogenomics database\"."),
                          c("To be published."), br(),  br(),
                          h4("Authors:"),
                          c("- Lucas Marques da Cunha¹"),br(),
-                         c("- Patrick Cesar A. Terrematte¹,"),br(),
+                         c("- Patrick Cesar A. Terrematte¹,²,"),br(),
                          c("- Tayná da Silva Fiúza¹, "),br(),
                          c("- Vandeclécio L. da Silva¹, "),br(),
                          c("- José Eduardo Kroll¹, "),br(),
-                         c("- Sandro José de Souza¹,²,"), br(),
+                         c("- Sandro José de Souza¹,"), br(),
                          c("- Gustavo Antônio de Souza¹,³,"),br(),
                          h4("Affiliations: "),
                          c("¹ Bioinformatics Multidisciplinary Environment - UFRN,"),br(),
-                         c("² Brain Institute - UFRN. "),br(),
+                         c("² Federal Rural University of Semi-arid - UFERSA, "),br(),
                          c("³ Department of Biochemistry - UFRN")))
                  )
         ),
