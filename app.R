@@ -8,13 +8,67 @@
 #    https://bookdown.org/weicheng/shinyTutorial/ui.html
 
 # ==== Loading library ===============================================================
-library(shiny)
-library(ggplot2)  
+if(!require(shiny)){ install.packages('shiny') }
+if(!require(ggplot2)){ install.packages('ggplot2') }
 if(!require(DT)){ install.packages('DT') }
 if(!require(dplyr)){ install.packages('dplyr') }
 if(!require(tidyr)){ install.packages('tidyr') }
 if(!require(vroom)){ install.packages('vroom') }
 if(!require(plotly)){ install.packages('plotly') }
+# if(!require(magrittr)){ install.packages('magrittr') }
+# if(!require(generics)){ install.packages('generics') }
+# if(!require(DT)){ install.packages('DT') }
+# if(!require(httpuv)){ install.packages('httpuv')}
+# if(!require(promises)){ install.packages('promises')}
+# if(!require(vctrs)){ install.packages('vctrs') }
+# if(!require(lifecycle)){ install.packages('lifecycle') }
+# if(!require(ellipsis)){ install.packages('ellipsis') }
+# if(!require(crayon)){ install.packages('crayon') }
+# if(!require(glue)){ install.packages('glue') }
+# if(!require(fansi)){ install.packages('fansi') }
+# if(!require(utf8)){ install.packages('utf8') }
+# if(!require(pillar)){ install.packages('pillar') }
+# if(!require(gtable)){ install.packages('gtable') }
+# if(!require(colorspace)){ install.packages('colorspace') }
+# if(!require(munsell)){ install.packages('munsell') }
+# if(!require(pkgconfig)){ install.packages('pkgconfig') }
+# if(!require(tibble)){ install.packages('tibble') }
+# if(!require(withr)){ install.packages('withr') }
+# if(!require(scales)){ install.packages('scales') }
+# if(!require(ggplot2)){ install.packages('ggplot2') }
+# if(!require(purrr)){ install.packages('purrr') }
+# if(!require(tidyselect)){ install.packages('tidyselect') }
+# if(!require(dplyr)){ install.packages('dplyr') }
+# if(!require(tidyr)){ install.packages('tidyr') }
+# if(!require(tzdb)){ install.packages('tzdb') }
+# if(!require(vroom)){ install.packages('vroom') }
+# if(!require(data.table)){ install.packages('data.table') }
+# if(!require(httr)){ install.packages('httr') }
+# if(!require(jsonlite)){ install.packages('jsonlite') }
+# if(!require(lazyeval)){ install.packages('lazyeval') }
+# if(!require(viridisLite)){ install.packages('viridisLite') }
+# if(!require(plotly)){ install.packages('plotly')}
+# if(!require(later)){ install.packages('later')}
+# if(!require(bitops)){ install.packages('bitops')}
+# #if(!require(RCurl)){ install.packages('RCurl')}
+# if(!require(farver)){ install.packages('farver')}
+# if(!require(terra)){ install.packages('terra')}
+# if(!require(raster)){ install.packages('raster')}
+# if(!require(shiny)){ install.packages('shiny')}
+# if(!require(leaflet)){ install.packages('leaflet')}
+# if(!require(leafem)){ install.packages('leafem')}
+
+# packages_cran = c("Rcpp", "leafem", "leafpop", "raster", "mapview", "rgdal", "rgeos", "terra", "raster", "satellite", "sf", "leaflet", "downlit","pryr", "shiny", "DT", "lobstr","dplyr", "tibble", "tidyr", "stringr", "plotly", "vroom")
+# 
+# #use this function to check if each package is on the local machine
+# #if a package is installed, it will be loaded
+# #if any are not, the missing package(s) will be installed from CRAN and loaded
+# package.check <- lapply(packages_cran, FUN = function(x) {
+#   if (!require(x, character.only = TRUE)) {
+#     install.packages(x, dependencies = TRUE)
+#     library(x, character.only = TRUE)
+#   }
+# })
 
 # ==== Global Functions ===============================================================
 img_uri <- function(x) { sprintf('<img src="%s"/>', knitr::image_uri(x)) }
@@ -264,7 +318,7 @@ ui <- fluidPage(
                  fluidRow(
                      column(12, wellPanel(
                          h4("Citation:"),
-                         c("LM Cunha, PCA Terrematte, TS Fiúza, VL Silva, JE Kroll, SJ de Souza, GA de Souza. (2021)"),
+                         c("LM Cunha, PCA Terrematte, TS Fiúza, VL Silva, JE Kroll, SJ de Souza, GA de Souza. (2022)"),
                          em("\"Assessing Nonsense-Mediated Decay machinery mutations in cancer peptide landscapes through a novel proteogenomics database\"."),
                          c("To be published."), br(),  br(),
                          h4("Authors:"),
@@ -274,7 +328,7 @@ ui <- fluidPage(
                          c("- Vandeclécio L. da Silva¹, "),br(),
                          c("- José Eduardo Kroll¹, "),br(),
                          c("- Sandro José de Souza¹,"), br(),
-                         c("- Gustavo Antônio de Souza¹,³,"),br(),
+                         c("- Gustavo Antônio de Souza¹,³"),br(),
                          h4("Affiliations: "),
                          c("¹ Bioinformatics Multidisciplinary Environment - UFRN,"),br(),
                          c("² Federal Rural University of Semi-arid - UFERSA, "),br(),
@@ -402,10 +456,10 @@ ui <- fluidPage(
                              ),
                          h4("Log files:"),
                          tags$ul(
-                             tags$li(a("SNP Missense and Nonsense mutations - Minor allele frequency (MAF) < 5%", href="missense_nonsense_mutation_maf_less_than_5.txt.gz", target="_blank")), 
+                             tags$li(a("Missense and Nonsense mutations - Minor allele frequency (MAF) < 5%", href="missense_nonsense_mutation_maf_less_than_5.txt.gz", target="_blank")), 
                          ),
                          tags$ul(
-                             tags$li(a("SNP Missense and Nonsense mutations - Minor allele frequency (MAF) >= 5%", href="missense_nonsense_mutation_maf_greater_than_5.txt.gz", target="_blank")), 
+                             tags$li(a("Missense and Nonsense mutations - Minor allele frequency (MAF) >= 5%", href="missense_nonsense_mutation_maf_greater_than_5.txt.gz", target="_blank")), 
                          ),
                          tags$ul(
                              tags$li(a("Frameshift mutations", href="frameshift_mutation.txt.gz", target="_blank")), 
