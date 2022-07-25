@@ -8,6 +8,21 @@
 #    https://bookdown.org/weicheng/shinyTutorial/ui.html
 
 # ==== Loading library ===============================================================
+#if(!require(uuid)){ install.packages("uuid") }
+#if(!require(curl)){ install.packages("curl") }
+#if(!require(remotes)){install.packages("remotes")}
+#if(!require(GAlogger)){ remotes::install_github("bnosac/GAlogger") }
+
+#ga_set_tracking_id("G-34TE3RG6BK")
+#ga_set_approval(consent = TRUE)
+#https://bioinfo.imd.ufrn.br/dbPepVar/#tab-9985-3
+#ga_collect_pageview(page = "/dbPepVar")
+#ga_collect_pageview(page = "#tab-9985-2", title = "Variants")
+#ga_collect_pageview(page = "#tab-9985-3", title = "Evidence tables")
+#ga_collect_pageview(page = "#tab-9985-4", title = "Proteogenomics Viewer")
+#ga_collect_pageview(page = "#tab-9985-5", title = "Donwload dataset")
+#ga_collect_pageview(page = "/dbPepVar", title = "Homepage", hostname = "bioinfo.imd.ufrn.br")
+
 if(!require(shiny)){ install.packages('shiny') }
 if(!require(ggplot2)){ install.packages('ggplot2') }
 if(!require(DT)){ install.packages('DT') }
@@ -205,6 +220,7 @@ rm(list=setdiff(ls(), c("dbPepVar","BrCa", "CrCa", "OvCa", "PrCa", "img_uri", "i
 
 # ==== ui.R ===============================================================
 ui <- fluidPage(
+    tags$head(includeHTML(("google-analytics.html"))),
     # Application title
     titlePanel(
         windowTitle = "dbPepVar",
