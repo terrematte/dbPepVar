@@ -8,7 +8,7 @@ The dbPepVar is available at: [https://bioinfo.imd.ufrn.br/dbPepVar/](https://bi
 
 ### Citation:
 
-LM Cunha, PCA Terrematte, TS Fiúza, VL Silva, JE Kroll, SJ de Souza, GA de Souza. (2021) "A proteogenomics approach for analysis and identification of genetic variants in different types of cancer associated with the inefficiency of the Nonsense-Mediated Decay machinery". To be published.
+LM Cunha, PCA Terrematte, TS Fiúza, VL Silva, JE Kroll, SJ de Souza, GA de Souza. (2022) "dbPepVar: a novel cancer proteogenomics database". To be published.
 
 ### Authors:
 - Lucas Marques da Cunha¹   
