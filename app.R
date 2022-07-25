@@ -335,7 +335,7 @@ ui <- fluidPage(
                      column(12, wellPanel(
                          h4("Citation:"),
                          c("LM Cunha, PCA Terrematte, TS Fiúza, VL Silva, JE Kroll, SJ de Souza, GA de Souza. (2022)"),
-                         em("\"Assessing Nonsense-Mediated Decay machinery mutations in cancer peptide landscapes through a novel proteogenomics database\"."),
+                         em("\"dbPepVar: a novel cancer proteogenomics database\"."),
                          c("To be published."), br(),  br(),
                          h4("Authors:"),
                          c("- Lucas Marques da Cunha¹"),br(),
