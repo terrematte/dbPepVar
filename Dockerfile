@@ -36,7 +36,4 @@ EXPOSE 3838
 # allow permission
 RUN sudo chown -R shiny:shiny /srv/dbPepVar
 # run app
-#CMD ["/srv/dbPepVar"]
-#CMD ["run.R"]
-#CMD ["Rscript", "-e", "rmarkdown::run('/srv/dbPepVar/app.R', shiny_args=list(host = '0.0.0.0', port=3838))"]
 CMD ["R", "-e", "shiny::runApp('/srv/dbPepVar', host='0.0.0.0', port=3838)"]
