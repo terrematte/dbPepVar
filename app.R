@@ -23,13 +23,13 @@
 #ga_collect_pageview(page = "#tab-9985-5", title = "Donwload dataset")
 #ga_collect_pageview(page = "/dbPepVar", title = "Homepage", hostname = "bioinfo.imd.ufrn.br")
 
-if(!require(shiny)){ install.packages('shiny') }
-if(!require(ggplot2)){ install.packages('ggplot2') }
-if(!require(DT)){ install.packages('DT') }
-if(!require(dplyr)){ install.packages('dplyr') }
-if(!require(tidyr)){ install.packages('tidyr') }
-if(!require(vroom)){ install.packages('vroom') }
-if(!require(plotly)){ install.packages('plotly') }
+if(!require(shiny, quietly=TRUE, warn.conflicts=FALSE)){ install.packages('shiny', quiet=TRUE) }
+if(!require(ggplot2, quietly=TRUE, warn.conflicts=FALSE)){ install.packages('ggplot2', quiet = FALSE) }
+if(!require(DT, quietly=TRUE, warn.conflicts=FALSE)){ install.packages('DT', quiet=TRUE) }
+if(!require(dplyr, quietly=TRUE, warn.conflicts=FALSE)){ install.packages('dplyr', quiet=TRUE) }
+if(!require(tidyr, quietly=TRUE, warn.conflicts=FALSE)){ install.packages('tidyr', quiet=TRUE) }
+if(!require(vroom, quietly=TRUE, warn.conflicts=FALSE)){ install.packages('vroom', quiet=TRUE) }
+if(!require(plotly, quietly=TRUE, warn.conflicts=FALSE)){ install.packages('plotly', quiet=TRUE) }
 # if(!require(magrittr)){ install.packages('magrittr') }
 # if(!require(generics)){ install.packages('generics') }
 # if(!require(DT)){ install.packages('DT') }
@@ -106,7 +106,7 @@ link_proteins <- function(val) {
 load("data/dbPepVar_snps.Rda")
 
 f <-  "data/dbPepVar_PTC_Peptides.tsv"
-dbPepVar <- vroom(f)  %>%
+dbPepVar <- vroom(f, show_col_types = FALSE)  %>%
     dplyr::select(-c("Gene","Variant_Classification"))
 
 # Merge data
@@ -169,10 +169,10 @@ dbPepVar <- dbPepVar %>%
 # ==== Load evidence files ===============================================================
 
 
-BrCa <-  vroom("data/evidence.dbPepVar.BrCa.txt") %>% dplyr::rename("snp_id" = "id SNP")
-CrCa <-  vroom("data/evidence.dbPepVar.CrCa.txt") %>% dplyr::rename("snp_id" = "id SNP")
-OvCa <-  vroom("data/evidence.dbPepVar.OvCa.txt") %>% dplyr::rename("snp_id" = "id SNP")
-PrCa <-  vroom("data/evidence.dbPepVar.PrCa.txt") %>% dplyr::rename("snp_id" = "id SNP")
+BrCa <-  vroom("data/evidence.dbPepVar.BrCa.txt", show_col_types = FALSE) %>% dplyr::rename("snp_id" = "id SNP")
+CrCa <-  vroom("data/evidence.dbPepVar.CrCa.txt", show_col_types = FALSE) %>% dplyr::rename("snp_id" = "id SNP")
+OvCa <-  vroom("data/evidence.dbPepVar.OvCa.txt", show_col_types = FALSE) %>% dplyr::rename("snp_id" = "id SNP")
+PrCa <-  vroom("data/evidence.dbPepVar.PrCa.txt", show_col_types = FALSE) %>% dplyr::rename("snp_id" = "id SNP")
 
 dbPepVar_snp_genes <- dbPepVar %>%
     dplyr::select(c("Gene", "GeneCards", "snp_id", "SNP_search")) %>%
@@ -220,7 +220,8 @@ rm(list=setdiff(ls(), c("dbPepVar","BrCa", "CrCa", "OvCa", "PrCa", "img_uri", "i
 
 # ==== ui.R ===============================================================
 ui <- fluidPage(
-    tags$head(includeHTML(("google-analytics.html"))),
+#    tags$head(includeHTML(("google-analytics.html"))),
+    tags$head(includeHTML(("www/google-analytics.html"))),
     # Application title
     titlePanel(
         windowTitle = "dbPepVar",
@@ -229,6 +230,7 @@ ui <- fluidPage(
                                     type="image/x-icon"))
     ),
     navbarPage(
+	windowTitle = "dbPepVar",
         img(src="favicon.png", align="right", width="35px"),
         
         # ==== Tab dbPepVar ===============================================================
