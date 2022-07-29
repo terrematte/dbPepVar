@@ -1,9 +1,8 @@
 # ==== ui.R ===============================================================
 ui <- fluidPage(
   tags$head(includeHTML(("www/google-analytics.html"))),
-  #waiter::use_waiter(),
-  #waiter::waiterPreloader(),
-  #waiterShowOnLoad(html = spin_fading_circles()),
+  waiter::use_waiter(),
+  waiter::waiterPreloader(html =  spin_wave(), color = "lightblue"),
   # Application title
   titlePanel(
     windowTitle = "dbPepVar",
@@ -13,7 +12,8 @@ ui <- fluidPage(
   ),
   navbarPage(
     windowTitle = "dbPepVar",
-    img(src="favicon.png", align="right", width="35px"),
+    
+    div(img(src="favicon.png", align="left", width="50px"), style="border: 0px; padding: 0px; margin: -14px 0 0 0px;" ), 
 
     # ==== Tab dbPepVar ===============================================================
     tabPanel('dbPepVar',

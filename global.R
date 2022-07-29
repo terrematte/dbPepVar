@@ -1,12 +1,5 @@
-#
-#
 # This is a Shiny web application. You can run the application by clicking
 # the 'Run App' button above.
-#
-# Find out more about building applications with Shiny here:
-#
-#    http://shiny.rstudio.com/
-#    https://bookdown.org/weicheng/shinyTutorial/ui.html
 
 # ==== Loading library ===============================================================
 #if(!require(uuid)){ install.packages("uuid") }
@@ -26,6 +19,7 @@
 
 if(!require(memoise, quietly=TRUE, warn.conflicts=FALSE)){ install.packages('memoise', quiet=TRUE) }
 if(!require(shiny, quietly=TRUE, warn.conflicts=FALSE)){ install.packages('shiny', quiet=TRUE) }
+#if(!require(shinythemes, quietly=TRUE, warn.conflicts=FALSE)){ install.packages('shinythemes', quiet=TRUE) }
 #if(!require(shinyjs, quietly=TRUE, warn.conflicts=FALSE)){ install.packages('shinyjs', quiet=TRUE) }
 if(!require(ggplot2, quietly=TRUE, warn.conflicts=FALSE)){ install.packages('ggplot2', quiet = FALSE) }
 if(!require(DT, quietly=TRUE, warn.conflicts=FALSE)){ install.packages('DT', quiet=TRUE) }
@@ -33,37 +27,8 @@ if(!require(dplyr, quietly=TRUE, warn.conflicts=FALSE)){ install.packages('dplyr
 if(!require(tidyr, quietly=TRUE, warn.conflicts=FALSE)){ install.packages('tidyr', quiet=TRUE) }
 if(!require(vroom, quietly=TRUE, warn.conflicts=FALSE)){ install.packages('vroom', quiet=TRUE) }
 if(!require(plotly, quietly=TRUE, warn.conflicts=FALSE)){ install.packages('plotly', quiet=TRUE) }
-#if(!require(waiter, quietly=TRUE, warn.conflicts=FALSE)){ install.packages("waiter", quiet=TRUE) }
-#if(!require(cicerone, quietly=TRUE, warn.conflicts=FALSE)){ install.packages("cicerone", quiet=TRUE) }
-
-# if(!require(promises, quietly=TRUE, warn.conflicts=FALSE)){ install.packages('promises', quiet=TRUE) }
-# if(!require(future, quietly=TRUE, warn.conflicts=FALSE)){ install.packages('future', quiet=TRUE) }
-#if(!require(remotes, quietly=TRUE, warn.conflicts=FALSE)){ install.packages("remotes", quiet=TRUE) }
-#if(!require(shinycssloaders, quietly=TRUE, warn.conflicts=FALSE)){ remotes::install_github("daattali/shinycssloaders") }
-#library(shinycssloaders)
-#if(!require(shinycssloaders, quietly=TRUE, warn.conflicts=FALSE)){ install.packages('shinycssloaders', quiet=TRUE)}
-# if(!require(purrr, quietly=TRUE, warn.conflicts=FALSE)){ install.packages('purrr', quiet=TRUE) }
-
-# library(purrr)
-# plan(multisession)
-# # 
-# globalrv <- reactiveVal(NULL)
-
-
-# load_data <- function() {
-#   Sys.sleep(2)
-#   hide("loading_page")
-#   show("main_content")
-# }
-
-# future_promise({
-#   Sys.sleep(5) # your long running function
-#   }) %...>%
-#   globalrv() %...!% # assign result to globalrv
-#   (function(e) {
-#     globalrv(NULL) # error handling needed?
-#     warning(e)
-#   })
+if(!require(waiter, quietly=TRUE, warn.conflicts=FALSE)){ install.packages("waiter", quiet=TRUE) }
+if(!require(cicerone, quietly=TRUE, warn.conflicts=FALSE)){ install.packages("cicerone", quiet=TRUE) }
 
 # if(!require(magrittr)){ install.packages('magrittr') }
 # if(!require(generics)){ install.packages('generics') }
@@ -107,18 +72,6 @@ if(!require(plotly, quietly=TRUE, warn.conflicts=FALSE)){ install.packages('plot
 # if(!require(shiny)){ install.packages('shiny')}
 # if(!require(leaflet)){ install.packages('leaflet')}
 # if(!require(leafem)){ install.packages('leafem')}
-
-# packages_cran = c("Rcpp", "leafem", "leafpop", "raster", "mapview", "rgdal", "rgeos", "terra", "raster", "satellite", "sf", "leaflet", "downlit","pryr", "shiny", "DT", "lobstr","dplyr", "tibble", "tidyr", "stringr", "plotly", "vroom")
-# 
-# #use this function to check if each package is on the local machine
-# #if a package is installed, it will be loaded
-# #if any are not, the missing package(s) will be installed from CRAN and loaded
-# package.check <- lapply(packages_cran, FUN = function(x) {
-#   if (!require(x, character.only = TRUE)) {
-#     install.packages(x, dependencies = TRUE)
-#     library(x, character.only = TRUE)
-#   }
-# })
 
 # ==== Set up caching ===============================================================
 source("R/memoize.R")
@@ -269,7 +222,6 @@ OvCa <- OvCa %>%
   dplyr::mutate(Gene = ifelse(is.na(Gene), "--", as.character(Gene)),
                 SNP_search = link_snps(snp_id)) %>%
   dplyr::select(all_of(cols2))
-
 
 #rm(list=setdiff(ls(), c("dbPepVar","BrCa", "CrCa", "OvCa", "PrCa", "img_uri", "img_uri_favicon", "img_uri_icon", 
 #                        "link_genecards", "link_snps", "link_proteins", "memoize", "memoize2", "cache", 
