@@ -1,6 +1,10 @@
 # ==== server.R ===============================================================
 server <- function(input, output, session) {
-
+  # suppress warnings  
+  storeWarn<- getOption("warn")
+  options(warn = -1) 
+  w <- Waiter$new(id = c("tb_dbPepVar", "tb_BrCa"))
+  
   data <- dbPepVar %>% 
     dplyr::select(c("Cancer_Type", "Gene", "Variant_Classification", "Refseq_protein",  "snp_id", "HGVSp", "Change", "Chromosome"))  %>% 
     unique()
@@ -428,7 +432,5 @@ server <- function(input, output, session) {
       src="dbPepVar.pv/index.html", height='1000', width='100%',
       style="border:0;")
   })
-  
-  #waiter_hide()
- 
+
 }
