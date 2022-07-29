@@ -6,6 +6,37 @@ Compared to other approaches, our database contains a greater diversity of varia
 
 The dbPepVar is available at: <https://bioinfo.imd.ufrn.br/dbPepVar/>.
 
+### Docker execution
+
+Run a Docker container of dbPepVar on your local machine.
+
+Docker is an open platform for developing, shipping, and running applications. Docker enables you to separate your applications from your infrastructure so you can deliver software quickly.
+
+  1.  Get and install docker from: <https://docs.docker.com/get-docker/>.
+
+  2.  Git clone this repository in your :
+
+```
+   git clone https://github.com/terrematte/dbPepVar
+```
+
+  3.   Build the container image using the `docker build` command.
+
+```
+   docker build -t dbpepvar .
+```
+     
+  4.   Run the container:
+
+``` 
+  sudo docker run dbpepvar  
+```  
+
+  4.   Access the application at <http://localhost:3838>.
+
+
+### Workflow and Figures of dbPepVar
+
 <img src="doc/fig1.png" alt="Figure 1. Workflow of dbPepVar" width="480"/>
 
 **Figure 1. Workflow of dbPepVar creation and the analysis of the results**. **Database creation step**: The first step consists of generating a multi-fasta transcript file containing information about the position of the beginning of the reading frame, the transcript identifier, and the reference protein. This information was obtained from CCDS (Consensus Coding Sequence) and RefSeq Link files, which contain the association between CCDS identifiers, Refseq protein, and transcribed RefSeq. The modified transcript Refseq was used to generate the sequences with frameshift and stop-loss mutations. The dbPepVar integrates peptides information, types of mutations, and transcripts data from RefSeq proteins and dbSNP. **Peptide identification step**: The search process uses each base individually (dbPepVar and RefSeq) to identify the peptides. **Filtering step**: In this step, the identified peptides are checked in both bases (dbPepVar and RefSeq) and verified if they have the same MS spectrum. In a redundancy case, the variant peptide with a higher score was kept. The variant peptides with scores less than 50 and false positives were removed. The false positives are the variant peptides with enzymatic cleavage error whose position differs from the reference protein. **Classification step**: In this step, variant peptides are classified according to the type of mutation. **Visualization step**: In the last step, the evidence tables of each cancer analyzed are available at the portal dbPepVar, and the data is integrated with the mass spectra visualization tool, Proteogenomics Viewer.

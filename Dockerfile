@@ -34,10 +34,11 @@ COPY doc /srv/dbPepVar/doc
 COPY data /srv/dbPepVar/data
 COPY icons /srv/dbPepVar/icons
 COPY www /srv/dbPepVar/www
+COPY R /srv/dbPepVar/R
 COPY README.md /srv/dbPepVar/README.md
 # select port
 EXPOSE 3838
 # allow permission
 RUN sudo chown -R shiny:shiny /srv/dbPepVar
 # run app
-CMD ["R", "-e", "shiny::runApp('/srv/dbPepVar', host='0.0.0.0', port=3838)"]
+CMD ["R", "-e", "shiny::runApp('/srv/dbPepVar', host='127.0.0.1', port=3838)"]
