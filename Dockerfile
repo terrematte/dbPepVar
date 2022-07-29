@@ -22,15 +22,19 @@ RUN R -e "install.packages('stringr', repos='http://cran.rstudio.com/')"
 RUN R -e "install.packages('tidyr', repos='http://cran.rstudio.com/')"
 RUN R -e "install.packages('vctrs', repos='http://cran.rstudio.com/')"
 RUN R -e "install.packages('vroom', repos='http://cran.rstudio.com/')"
+RUN R -e "install.packages('waiter', repos='http://cran.rstudio.com/')"
+RUN R -e "install.packages('cicerone', repos='http://cran.rstudio.com/')"
 # copy the app to the image
 COPY dbPepVar.Rproj /srv/dbPepVar/dbPepVar.Rproj
-COPY app.R /srv/dbPepVar/app.R
+COPY global.R /srv/dbPepVar/global.R
+COPY server.R /srv/dbPepVar/server.R
+COPY ui.R /srv/dbPepVar/ui.R
 COPY run.R /srv/dbPepVar/run.R
-COPY _config.yml /srv/dbPepVar/_config.yml
-COPY README.md /srv/dbPepVar/README.md
+COPY doc /srv/dbPepVar/doc
 COPY data /srv/dbPepVar/data
 COPY icons /srv/dbPepVar/icons
 COPY www /srv/dbPepVar/www
+COPY README.md /srv/dbPepVar/README.md
 # select port
 EXPOSE 3838
 # allow permission
