@@ -32,7 +32,7 @@ Docker is an open platform for developing, shipping, and running applications. D
   sudo docker run dbpepvar  
 ```  
 
-  4.   Access the application at <http://localhost:3838>.
+  5.   Access the application at <http://localhost:3838>.
 
 
 ### Workflow and Figures of dbPepVar
