@@ -8,31 +8,32 @@ The dbPepVar is available at: <https://bioinfo.imd.ufrn.br/dbPepVar/>.
 
 ### Docker execution
 
-Run a Docker container of dbPepVar on your local machine.
+Run a Docker container of dbPepVar on your local machine through the terminal.
 
 Docker is an open platform for developing, shipping, and running applications. Docker enables you to separate your applications from your infrastructure so you can deliver software quickly.
 
   1.  Get and install docker from: <https://docs.docker.com/get-docker/>.
 
-  2.  Git clone this repository in your :
+  2.  Git clone this repository and go to its directory:
 
 ```
    git clone https://github.com/terrematte/dbPepVar
+   cd dbPepVar
 ```
 
   3.   Build the container image using the `docker build` command.
 
 ```
-   docker build -t dbpepvar .
+   sudo docker build -t dbpepvar .
 ```
      
   4.   Run the container:
 
 ``` 
-  sudo docker run dbpepvar  
-```  
+  sudo docker run -p 3838:3838 dbpepvar
+```
 
-  5.   Access the application at <http://localhost:3838>.
+  5.   Access the application at <http://0.0.0.0:3838>.
 
 
 ### Workflow and Figures of dbPepVar
