@@ -24,6 +24,11 @@ RUN R -e "install.packages('vctrs', repos='http://cran.rstudio.com/')"
 RUN R -e "install.packages('vroom', repos='http://cran.rstudio.com/')"
 RUN R -e "install.packages('waiter', repos='http://cran.rstudio.com/')"
 RUN R -e "install.packages('cicerone', repos='http://cran.rstudio.com/')"
+RUN R -e "install.packages('shinycssloaders', repos='http://cran.rstudio.com/')"
+RUN R -e "install.packages('digest', repos='http://cran.rstudio.com/')"
+RUN R -e "install.packages('memoise', repos='http://cran.rstudio.com/')"
+RUN R -e "install.packages('htmltools', repos='http://cran.rstudio.com/')"
+RUN R -e "install.packages('cachem', repos='http://cran.rstudio.com/')"
 # copy the app to the image
 COPY dbPepVar.Rproj /srv/dbPepVar/dbPepVar.Rproj
 COPY global.R /srv/dbPepVar/global.R
