@@ -2,8 +2,7 @@
 .Rhistory
 .RData
 .Ruserdata
-setAccountInfo.R
-missense_nonsense_mutation_maf_less_than_5.txt.gz
-portal/index_files/*
-portal/dbPepVar_snps_files/*
-rsconnect/*
+www/client-web-id.json
+www/missense_nonsense_mutation_maf_less_than_5.txt.gz
+googleAnalyticsR.R
+bind-cache/*
