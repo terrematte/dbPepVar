@@ -19,6 +19,7 @@
 
 if(!require(memoise, quietly=TRUE, warn.conflicts=FALSE)){ install.packages('memoise', quiet=TRUE) }
 if(!require(shiny, quietly=TRUE, warn.conflicts=FALSE)){ install.packages('shiny', quiet=TRUE) }
+if(!require(htmltools, quietly=TRUE, warn.conflicts=FALSE)){ install.packages('htmltools', quiet=TRUE) }
 #if(!require(shinythemes, quietly=TRUE, warn.conflicts=FALSE)){ install.packages('shinythemes', quiet=TRUE) }
 #if(!require(shinyjs, quietly=TRUE, warn.conflicts=FALSE)){ install.packages('shinyjs', quiet=TRUE) }
 if(!require(ggplot2, quietly=TRUE, warn.conflicts=FALSE)){ install.packages('ggplot2', quiet = FALSE) }
@@ -27,7 +28,10 @@ if(!require(dplyr, quietly=TRUE, warn.conflicts=FALSE)){ install.packages('dplyr
 if(!require(tidyr, quietly=TRUE, warn.conflicts=FALSE)){ install.packages('tidyr', quiet=TRUE) }
 if(!require(vroom, quietly=TRUE, warn.conflicts=FALSE)){ install.packages('vroom', quiet=TRUE) }
 if(!require(plotly, quietly=TRUE, warn.conflicts=FALSE)){ install.packages('plotly', quiet=TRUE) }
-if(!require(waiter, quietly=TRUE, warn.conflicts=FALSE)){ install.packages("waiter", quiet=TRUE) }
+
+# https://daattali.com/shiny/shinycssloaders-demo/
+# https://github.com/daattali/shinycssloaders#usage
+# https://projects.lukehaas.me/css-loaders/
 if(!require(cicerone, quietly=TRUE, warn.conflicts=FALSE)){ install.packages("cicerone", quiet=TRUE) }
 
 # if(!require(magrittr)){ install.packages('magrittr') }
@@ -228,3 +232,117 @@ OvCa <- OvCa %>%
 #                        "plotly_build2", "plotbarCancerSamples", "globalrv", "load_data")))
 
 rm(list = c("by", "cache_dir", "cols1", "cols2", "dbPepVar_snp_genes", "dbPepVar_snps", "f", "genes_nmd", "props"))
+
+guide <- Cicerone$
+  new(id = "homeGuide"
+  )$
+  step(
+    "[data-value='dbPepVar']",
+    "Summary of dbPepVar",
+    "<p>The first menu (dbPepVar) contains a summary of the data accessible through the portal.</p>
+    <p>The graphical displays were separated by section according to the type of data and analysis that can be performed.</p>",
+    is_id = FALSE,
+    position = "bottom"
+  )$
+  step(
+    "[data-value='Variants']",
+    "Variants of actual dataset",
+    "<p>The second menu shows the actual dataset in an interactive format, where users can perform data mining and generate insights for 
+    their research. </p>
+    
+    <p>This action can be done by selecting all or single rows with up to 27 columns that describe each mutation.</p>
+    
+    <p>The table includes links to GeneCards, NCBI protein, and dbSNP. Users can filter on any of the provided columns using plain text and 
+    regular expressions. Recovered results can be downloaded as CSV or PDF formatted files (all pages or current page only).</p>",
+    is_id = FALSE,
+    position = "bottom"
+  )$
+  step(
+    "[data-value='Evidence Tables']",
+    "Evidence Tables",
+    "<p>The third menu is constructed by parsing the evidence files, which combine all information about the peptides identified by Mass spectrometry  and 
+    is normally the only information needed for processing the results. </p>
+    
+    <p>It is from the evidence file that the other results presented on the portal are generated. </p>
+    
+    <p>Each type of cancer has an evidence file that can be accessed in its respective tab - breast cancer (BrCa), colon-rectal cancer (CrCa), ovarian cancer (OvCa), and prostate cancer (PrCa). </p>
+    
+    <p>Every file contains peptide information such as its amino acid sequence, post-translational modifications, the number of enzyme missed 
+    cleavages, its mass/charge ratio, identification scores, intensity, gene and  protein names where it belongs, and more. </p>
+    <p>The displayed columns can be changed by selecting specific columns. By default, unique rows are displayed, but all rows may be selected. 
+    It is also possible to download filtered information in PDF or CSV format (all pages or current page only)</p>",
+    is_id = FALSE,
+    position = "bottom"
+  )$
+  step(
+    "[data-value='Proteogenomics Viewer']",
+    "Proteogenomics Viewer",
+    "<p>This menu integrates genomic and proteomic data, providing a genetic view of peptides in a sliding panel with their respective Peptide 
+    Spectrum and Peptide Expression.</p> 
+    
+    <p>The search is performed by the name of the gene of interest and, after selecting it, the identified variant 
+    peptide sequences and its exonic location are shown.</p> ",
+    is_id = FALSE,
+    position = "bottom"
+  )$
+  step(
+    "[data-value='Download Data']",
+    "Download Data",
+    "<p>Finally, this menu contains the files referring to the multi-fasta containing the mutated protein sequences
+    and the log files containing information about SNPs identifiers, proteins, the position of the peptide in the
+    protein, and mutated peptides and reference.</p>
+    
+    <p>It is also possible to obtain a detailed description of the information in each file and its respective construction process.</p>",
+    is_id = FALSE,
+    position = "bottom"
+  )$
+ step(
+  "plots_sec1",
+  "First section",
+  "<p>The initial section reports the distribution of samples, peptide sequences, and unique polymorphisms filtered by cancer type or by variant type. <p>
+   <p>The latter sections summarize different aspects of the database in graphical and table format. </p>
+   <p>More specifically, dbPepVar users can view graphs of the distribution of peptides and SNPs by cancer type and mutation classification (SNPs graph only)</p>",
+  is_id = TRUE,
+  position = "top-center"
+  )$
+  step(
+    "plots_sec2",
+    "Second section",
+    "<p>In the second section, users can explore and visualize the count of the most mutated genes, segregated by cancer type and with a responsive table explicitly showing the displayed data. </p>
+     <p>As with all graphs in the portal, Plotly tools (i.e. lasso or box select) are available and allow comparing data, filtering by cancer type and gene groups from a threshold that can be defined 
+     by counting SNPs identified per sample. The responsive table also allows to filter and visualize the number of samples that have a mutation in a specific gene according to the type of cancer.</p>
+     
+    <p> Similar analysis can be done with the graph and table provided in the following sections.</p>",
+    is_id = TRUE,
+    position = "top-center"
+  )$
+  step(
+    "plots_sec3",
+    "Third section",
+    "<p>The third section of the first menu exhibits the number of SNPs per gene, which may be used to build a mutational panel for each cancer type and gene of interest.</p>",
+    is_id = TRUE,
+    position = "top-center"
+  )$
+  step(
+    "plots_sec4",
+    "Fourth and fifth sections",
+    "<p>The fourth and fifth sections are dedicated to amino acid change counts by sample and by SNP, respectively. In this way, it is possible to observe, at the proteomic level, the most frequent amino acid exchanges for different cancers and SNPs, which may help understand which mutations propagate from the genome to the proteome.</p>",
+    is_id = TRUE,
+    position = "top-center"
+  )$
+  step(
+    "plots_sec5",
+    "Final sections",
+    "<p>
+    Two additional sections summarizing other layers of integrated information are then displayed, without tables: 
+    one with chemical property changes of amino acids sorted by cancer type, where `Multiple' refers to samples with frame-shift mutations, 
+    and another showing the distribution of mutated genes by chromosomal location.</p>
+    
+    <p>Thus, users can interactively perform two tasks: <br/>
+    (i) filter and visualize the most frequent changes in amino acids according to cancer type, and <br/>
+    (ii) filter and visualize the common exchanges between chemical groups of amino acids. 
+    </p>",
+    is_id = TRUE,
+    position = "top-center"
+  )
+

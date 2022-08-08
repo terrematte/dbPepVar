@@ -1,9 +1,25 @@
 # ==== ui.R ===============================================================
 ui <- fluidPage(
-  tags$head(includeHTML(("www/google-analytics.html"))),
-  waiter::use_waiter(),
-  waiter::waiterPreloader(html =  spin_wave(), color = "lightblue"),
-  # Application title
+  use_cicerone(),
+  tags$head(
+    tags$style(
+      HTML(
+        "div#driver-popover-item {
+          max-width: 700px;
+          width: 700px;
+          background-color: #E0FFFF;
+          color: #191970;
+        }
+        div#driver-highlighted-element-stage, div#driver-page-overlay {
+          background: transparent !important;
+          outline: 5000px solid rgba(0, 0, 0, .75)
+        }
+        "
+      )
+    ),
+    includeHTML("www/google-analytics.html")
+  ),
+    # Application title
   titlePanel(
     windowTitle = "dbPepVar",
     title = tags$head(tags$link(rel="icon",
@@ -12,9 +28,10 @@ ui <- fluidPage(
   ),
   navbarPage(
     windowTitle = "dbPepVar",
-    
-    div(img(src="favicon.png", align="left", width="50px"), style="border: 0px; padding: 0px; margin: -14px 0 0 0px;" ), 
-
+    div(img(src="favicon.png", align="left", width="50px"), style="border: 0px; padding: 0px; margin: -14px 0 0 10px;" ), 
+    id = "nav",
+    position = "fixed-top",
+    br(br()),
     # ==== Tab dbPepVar ===============================================================
     tabPanel('dbPepVar',
              fluidRow(
@@ -22,7 +39,7 @@ ui <- fluidPage(
         The dbPepVar is a new proteogenomics database which combines genetic variation information from dbSNP with 
         protein sequences from NCBI's RefSeq. We then perform a pan-cancer analysis (Ovarian, Colorectal, Breast and Prostate) 
         using public mass spectrometry datasets to identify genetic variations and genes present in the analyzed samples. 
-        As results, were identified 3,726 variant peptides in ovarian (OvCa),  2,543 in prostate (PrCa), 2,661 in breast (BrCa) and 2,411 in colon-rectal cancer (CrCa)."),
+        As results, were identified 2,661 variant peptides in breast cancer (BrCa), 2,411 in colon-rectal cancer (CrCa), 3,726 in ovarian cancer (OvCa), and  2,543 in prostate cancer (PrCa)."),
                                     
                                     
                                     p("
@@ -30,110 +47,134 @@ ui <- fluidPage(
         nonsense mutations, loss of termination codon, insertions, deletions (of any size), frameshifts and mutations that 
         alter the start translation. Besides, for each protein, only the variant tryptic peptides derived from enzymatic cleavage 
         (i.e., trypsin) are inserted, following the criteria of size, allelic frequency and affected regions of the protein. 
-        In our approach, MS data is submitted to the dbPepVar variant and reference base separately. The outputs are compared 
+        In our approach, Mass spectrometry (MS) data is submitted to the dbPepVar variant and reference base separately. The outputs are compared 
         and filtered by the scores for each base. Using public MS data from four types of cancer, we mostly identified 
         cancer-specific SNPs, but shared mutations were also present in a lower amount.                               
         "), br(),
                                     icon("cog", lib = "glyphicon"), 
-                                    em( "
-        Click on legends of plots to activate or deactivate labels. Use ",  
-                                        a("regex", href="cheatsheets_regex.pdf", target="_blank"), 
-                                        " to search in datatables.", br(),
-                                    )))
+                                    em( "Click on legends of plots to activate or deactivate labels."), br(),
+                                    icon("cog", lib = "glyphicon"),                                           
+                                    em( "Use ",
+                                    a("regex", href="misc/cheatsheets_regex.pdf", target="_blank"), 
+                                        " to search in datatables."
+                                    ), br(), br(),
+                                    actionButton("guide", " Run guided tour", icon = icon("info-sign", lib = "glyphicon"))
+                                    ))
              ),
-             fluidRow(
-               column(3,
-                      plotlyOutput("fig.barCancerSamples")
+             div(
+               id = "plots",
+               div(
+                 id = "plots_sec1",
+               fluidRow(
+                 column(3,
+                        shinycssloaders::withSpinner(plotlyOutput("fig.barCancerSamples"), size = 0.5, type=1, color.background = "white")
+                 ),
+                 column(3,
+                        shinycssloaders::withSpinner(plotlyOutput("fig.barCancerSequence"), size = 0.5, type=1, color.background = "white")
+                 ),
+                 column(3,
+                        shinycssloaders::withSpinner(plotlyOutput("fig.pieCancerSNP"), size = 0.5, type=1, color.background = "white")
+                 ),
+                 column(3,
+                        shinycssloaders::withSpinner(plotlyOutput("fig.pieVarClassif"), size = 0.5, type=1, color.background = "white")
+                 )
                ),
-               column(3,
-                      plotlyOutput("fig.barCancerSequence")
                ),
-               column(3,
-                      plotlyOutput("fig.pieCancerSNP")
+               div(
+                 id = "plots_sec2",
+               fluidRow(
+                 column(12, wellPanel(c("Mutated Genes of Samples by Cancer")))
                ),
-               column(3,
-                      plotlyOutput("fig.pieVarClassif")
+               fluidRow(
+                 column(8, 
+                        shinycssloaders::withSpinner(plotlyOutput("fig.barGeneSamples"), size = 0.5, type=1, color.background = "white")
+                 ),
+                 column(4, 
+                        shinycssloaders::withSpinner(DT::dataTableOutput("tb_data_GeneSamples"), size = 0.5, type=1, color.background = "white")
+                 ),
+               ),
+               ),
+               div(
+                 id = "plots_sec3",
+               fluidRow(
+                 column(12, wellPanel(c("Mutated Genes of unique SNPs identified from Peptides")))
+               ),
+               fluidRow(
+                 column(8, 
+                        shinycssloaders::withSpinner(plotlyOutput("fig.barGene"), size = 0.5, type=1, color.background = "white")
+                 ),
+                 column(4, 
+                        shinycssloaders::withSpinner(DT::dataTableOutput("tb_data_Gene"), size = 0.5, type=1, color.background = "white")
+                 ),
+               ),
+               ),
+               div(
+                 id = "plots_sec4",
+               fluidRow(
+                 column(12, wellPanel(c("Amino acid changes of Samples by Cancer")))
+               ),
+               fluidRow(
+                 column(8, 
+                        shinycssloaders::withSpinner(plotlyOutput("fig.barChangeSamples"), size = 0.5, type=1, color.background = "white")
+                 ),
+                 column(4, 
+                        shinycssloaders::withSpinner(DT::dataTableOutput("tb_data_ChangeSamples"), size = 0.5, type=1, color.background = "white")
+                 ),
+               ),
+               fluidRow(
+                 column(12, wellPanel(c("Amino acid changes of unique SNPs identified from Peptides")))
+               ),
+               fluidRow(
+                 column(8, 
+                        shinycssloaders::withSpinner(plotlyOutput("fig.barChange"), size = 0.5, type=1, color.background = "white")
+                 ),
+                 column(4, 
+                        shinycssloaders::withSpinner(DT::dataTableOutput("tb_data_Change"), size = 0.5, type=1, color.background = "white")
+                 ),
+               ),
+               ),
+               div(
+                 id = "plots_sec5",
+               fluidRow(
+                 column(12, wellPanel(c("Properties Changes of Samples by Cancer")))
+               ),
+               fluidRow(
+                 column(12, 
+                        shinycssloaders::withSpinner(plotlyOutput("fig.barProperties"), size = 0.5, type=1, color.background = "white")
+                 )
+               ),
+               fluidRow(
+                 column(12, wellPanel(c("Mutations of Samples per Chromosome by Cancer")))
+               ),
+               fluidRow(
+                 column(12, 
+                        shinycssloaders::withSpinner(plotlyOutput("fig.barChromosome"), size = 0.5, type=1, color.background = "white")
+                 )
+               ),
+               ),
+               fluidRow(
+                 column(12, wellPanel(
+                   h4("Citation:"),
+                   HTML(paste0("Lucas Marques da Cunha", tags$sup("1,2"))),
+                   HTML(paste0(", Patrick Terrematte", tags$sup("3"))),
+                   HTML(paste0(", Tayná da Silva Fiúza", tags$sup("1"))),
+                   HTML(paste0(", Vandeclécio L. da Silva", tags$sup("1"))),
+                   HTML(paste0(", José Eduardo Kroll", tags$sup("1"))),
+                   HTML(paste0(", Sandro José de Souza", tags$sup("1,2"))), 
+                   HTML(paste0(", Gustavo Antônio de Souza", tags$sup("1,5"))),
+                   c("(2022)"),
+                   em("\"dbPepVar: a novel cancer proteogenomics database\"."),
+                   c("To be published."), br(),  br(),
+                   h4("Affiliations: "),
+                   HTML(paste0(tags$sup("1"), "Bioinformatics Multidisciplinary Environment - BioME, Federal University of Rio Grande do Norte - UFRN, Brazil")),br(),
+                   HTML(paste0(tags$sup("2"), "Federal University of Rondonia - UNIR, Brazil")),br(),
+                   HTML(paste0(tags$sup("3"), "Metropolis Digital Institute, UFRN, Brazil")),br(),
+                   HTML(paste0(tags$sup("4"), "Brain Institute, UFRN, Brazil")),br(),
+                   HTML(paste0(tags$sup("5"), "Department of Biochemistry, UFRN, Brazil"))
+                   ))
                )
              ),
-             fluidRow(
-               column(12, wellPanel(c("Mutated Genes of Samples by Cancer")))
-             ),
-             fluidRow(
-               column(8, 
-                      plotlyOutput("fig.barGeneSamples")
-               ),
-               column(4, 
-                      DT::dataTableOutput("tb_data_GeneSamples")
-               ),
-             ),
-             fluidRow(
-               column(12, wellPanel(c("Mutated Genes of unique SNPs identified from Peptides")))
-             ),
-             fluidRow(
-               column(8, 
-                      plotlyOutput("fig.barGene")
-               ),
-               column(4, 
-                      DT::dataTableOutput("tb_data_Gene")
-               ),
-             ),
-             fluidRow(
-               column(12, wellPanel(c("Amino acid changes of Samples by Cancer")))
-             ),
-             fluidRow(
-               column(8, 
-                      plotlyOutput("fig.barChangeSamples")
-               ),
-               column(4, 
-                      DT::dataTableOutput("tb_data_ChangeSamples")
-               ),
-             ),
-             fluidRow(
-               column(12, wellPanel(c("Amino acid changes of unique SNPs identified from Peptides")))
-             ),
-             fluidRow(
-               column(8, 
-                      plotlyOutput("fig.barChange")
-               ),
-               column(4, 
-                      DT::dataTableOutput("tb_data_Change")
-               ),
-             ),
-             fluidRow(
-               column(12, wellPanel(c("Properties Changes of Samples by Cancer")))
-             ),
-             fluidRow(
-               column(12, 
-                      plotlyOutput("fig.barProperties")
-               )
-             ),
-             fluidRow(
-               column(12, wellPanel(c("Mutations of Samples per Chromosome by Cancer")))
-             ),
-             fluidRow(
-               column(12, 
-                      plotlyOutput("fig.barChromosome")
-               )
-             ),
-             fluidRow(
-               column(12, wellPanel(
-                 h4("Citation:"),
-                 c("LM Cunha, PCA Terrematte, TS Fiúza, VL Silva, JE Kroll, SJ de Souza, GA de Souza. (2022)"),
-                 em("\"dbPepVar: a novel cancer proteogenomics database\"."),
-                 c("To be published."), br(),  br(),
-                 h4("Authors:"),
-                 c("- Lucas Marques da Cunha¹"),br(),
-                 c("- Patrick Cesar A. Terrematte¹,²,"),br(),
-                 c("- Tayná da Silva Fiúza¹, "),br(),
-                 c("- Vandeclécio L. da Silva¹, "),br(),
-                 c("- José Eduardo Kroll¹, "),br(),
-                 c("- Sandro José de Souza¹,"), br(),
-                 c("- Gustavo Antônio de Souza¹,³"),br(),
-                 h4("Affiliations: "),
-                 c("¹ Bioinformatics Multidisciplinary Environment - UFRN,"),br(),
-                 c("² Federal Rural University of Semi-arid - UFERSA, "),br(),
-                 c("³ Department of Biochemistry - UFRN")))
-             )
+             
     ),
     # ==== Tab Variants ===============================================================
     tabPanel(
@@ -144,20 +185,22 @@ ui <- fluidPage(
       # ),
       # Sidebar with a slider input for number of bins
       sidebarLayout(
-        sidebarPanel(
-          radioButtons("show_unique_dbPepVar", 
-                       "Show", 
-                       choices = list("Unique rows" = "unique" , "All rows" = "all"),  
-                       selected = c("unique"),
-                       inline = TRUE),
-          checkboxGroupInput("show_vars_dbPepVar", 
-                             "Select columns in dbPepVar:",
-                             names(dbPepVar), selected = names(dbPepVar)[c(1,2,4:12)]),
-          width = 3
-        ),
+        div(
+        id = "options_dbPepVar",
+          sidebarPanel(
+            radioButtons("show_unique_dbPepVar", 
+                         "Show", 
+                         choices = list("Unique rows" = "unique" , "All rows" = "all"),  
+                         selected = c("unique"),
+                         inline = TRUE),
+            checkboxGroupInput("show_vars_dbPepVar", 
+                               "Select columns in dbPepVar:",
+                               names(dbPepVar), selected = names(dbPepVar)[c(1,2,4:12)]),
+            width = 3
+          )),
         
         mainPanel(
-          DT::dataTableOutput("tb_dbPepVar"),
+          shinycssloaders::withSpinner(DT::dataTableOutput("tb_dbPepVar"), size = 0.5, type=1, color.background = "white"),
           # tabsetPanel(
           #     id = 'tab',
           #     tabPanel("dbPepVar",)
@@ -221,10 +264,10 @@ ui <- fluidPage(
         mainPanel(
           tabsetPanel(
             id = 'tab_evidance',
-            tabPanel("BrCa", DT::dataTableOutput("tb_BrCa")),
-            tabPanel("CrCa", DT::dataTableOutput("tb_CrCa")),
-            tabPanel("OvCa", DT::dataTableOutput("tb_OvCa")),
-            tabPanel("PrCa", DT::dataTableOutput("tb_PrCa"))
+            tabPanel("BrCa", shinycssloaders::withSpinner(DT::dataTableOutput("tb_BrCa"), size = 0.5, type=1, color.background = "white")),
+            tabPanel("CrCa", shinycssloaders::withSpinner(DT::dataTableOutput("tb_CrCa"), size = 0.5, type=1, color.background = "white")),
+            tabPanel("OvCa", shinycssloaders::withSpinner(DT::dataTableOutput("tb_OvCa"), size = 0.5, type=1, color.background = "white")),
+            tabPanel("PrCa", shinycssloaders::withSpinner(DT::dataTableOutput("tb_PrCa"), size = 0.5, type=1, color.background = "white"))
           ),
           width = 9
         )
@@ -234,16 +277,22 @@ ui <- fluidPage(
     tabPanel('Proteogenomics Viewer',
              fluidRow(
                column(12, 
-                      htmlOutput("frame")
+                      htmlOutput("ProteogenViewer")
                )
              ),
              
              fluidRow(
                column(12, wellPanel(
+                 h4("Presentation of Proteogenomic Viewer:"),
+                 tags$iframe(width="560", height="315", src="https://www.youtube.com/embed/5NzyRvuk4Ac", frameborder="0", allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture", allowfullscreen=NA),
+                 
                  h4("Citation:"),
-                 c("JE Kroll, VL da Silva, SJ de Souza, GA de Souza. (2017)"),
-                 em("\"A tool for integrating genetic and mass spectrometry‐based peptide data: Proteogenomics Viewer: PV: A genome browser‐like tool, which includes MS data visualization and peptide identification parameters\"."),
-                 c("Bioessays 39 (7),"), a("https://doi.org/10.1002/bies.201700015", href="https://doi.org/10.1002/bies.201700015", target="_blank"),c("."), br(),  br()
+                 c("Kroll, J.E., da Silva, V.L., de Souza, S.J. and de Souza, G.A. (2017)"),
+                 em("\"A tool for integrating genetic and mass spectrometry‐based peptide data: Proteogenomics Viewer - A genome browser‐like tool, which includes MS data visualization and peptide identification parameters\"."),
+                 c("Bioessays 39 (7),"), a("https://doi.org/10.1002/bies.201700015", href="https://doi.org/10.1002/bies.201700015", target="_blank"), c("."), br(),                  
+                 a("[BibTex]", href="misc/citation_ProteogenomicViewer.bib", target="_blank"), c(" "),
+                 a("[RIS]", href="misc/citation_ProteogenomicViewer.ris", target="_blank"), 
+                 br(),  br()
                )
                ))),
     # ==== Tab Downloads ===============================================================

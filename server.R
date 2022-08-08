@@ -3,7 +3,12 @@ server <- function(input, output, session) {
   # suppress warnings  
   storeWarn<- getOption("warn")
   options(warn = -1) 
-  w <- Waiter$new(id = c("tb_dbPepVar", "tb_BrCa"))
+
+  guide$init()$start()
+  
+  observeEvent(input$guide, {
+    guide$start()
+  })
   
   data <- dbPepVar %>% 
     dplyr::select(c("Cancer_Type", "Gene", "Variant_Classification", "Refseq_protein",  "snp_id", "HGVSp", "Change", "Chromosome"))  %>% 
@@ -100,15 +105,6 @@ server <- function(input, output, session) {
     dplyr::filter(Prop_change %in% PropTop) %>% 
     pivot_wider( names_from = "Cancer_Type", values_from = n)
   
-  # output$spinner <- renderUI({
-  #   if(is.null(globalrv())){
-  #     shinycssloaders::withSpinner(uiOutput("dummy"))
-  #   } else {
-  #     NULL
-  #   }
-  # })
-
- 
   # Bar plot of Samples by Cancer Type  ----
   output$fig.barCancerSamples <- renderPlotly({
     plot_ly(data = dataCancerSamples , x = ~Cancer_Type, y = ~n, type = 'bar',
@@ -343,6 +339,7 @@ server <- function(input, output, session) {
   
   # dbPepVar ----
   output$tb_dbPepVar <- DT::renderDataTable({
+    #w$show()
     DT::datatable(
       if(input$show_unique_dbPepVar == "unique"){ 
         dbPepVar[ !duplicated(dbPepVar[, input$show_vars_dbPepVar]) , input$show_vars_dbPepVar, drop = FALSE]
@@ -426,7 +423,7 @@ server <- function(input, output, session) {
     )
   })
   
-  output$frame <- renderUI({
+  output$ProteogenViewer <- renderUI({
     tags$iframe(
       seamless="seamless",
       src="dbPepVar.pv/index.html", height='1000', width='100%',

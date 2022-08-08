@@ -1,0 +1,31 @@
+
+TY  - JOUR
+T1  - A tool for integrating genetic and mass spectrometry-based peptide data: Proteogenomics Viewer
+AU  - Kroll, José Eduardo
+AU  - da Silva, Vandeclécio Lira
+AU  - de Souza, Sandro José
+AU  - de Souza, Gustavo Antonio
+Y1  - 2017/07/01
+PY  - 2017
+DA  - 2017/07/01
+N1  - https://doi.org/10.1002/bies.201700015
+DO  - https://doi.org/10.1002/bies.201700015
+T2  - BioEssays
+JF  - BioEssays
+JO  - BioEssays
+JA  - BioEssays
+SP  - 1700015
+VL  - 39
+IS  - 7
+KW  - alternative splicing events
+KW  - genome browser
+KW  - mass spectrometry
+KW  - peptide identification
+KW  - proteogenomics
+PB  - John Wiley & Sons, Ltd
+SN  - 0265-9247
+M3  - https://doi.org/10.1002/bies.201700015
+UR  - https://doi.org/10.1002/bies.201700015
+Y2  - 2022/08/07
+N2  - In this manuscript we describe Proteogenomics Viewer, a web-based tool that collects MS peptide identification, indexes to genomic sequence and structure, assigns exon usage, reports the identified protein isoforms with genomic alignments and, most importantly, allows the inspection of MS2 information for proper peptide identification. It also provides all performed indexing to facilitate global analysis of the data. The relevance of such tool is that there has been an increase in the number of proteogenomic efforts to improve the annotation of both genomics and proteomics data, culminating with the release of the two human proteome drafts. It is now clear that mass spectrometry-based peptide identification of uncharacterized sequences, such as those resulting from unpredicted exon joints or non-coding regions, is still prone to a higher than expected false discovery rate. Therefore, proper visualization of the raw data and the corresponding genome alignments are fundamental for further data validation and interpretation. Also see the video abstract here: http://youtu.be/5NzyRvuk4Ac
+ER  - 
