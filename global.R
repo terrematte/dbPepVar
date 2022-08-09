@@ -20,6 +20,7 @@
 if(!require(memoise, quietly=TRUE, warn.conflicts=FALSE)){ install.packages('memoise', quiet=TRUE) }
 if(!require(shiny, quietly=TRUE, warn.conflicts=FALSE)){ install.packages('shiny', quiet=TRUE) }
 if(!require(htmltools, quietly=TRUE, warn.conflicts=FALSE)){ install.packages('htmltools', quiet=TRUE) }
+if(!require(shinycssloaders, quietly=TRUE, warn.conflicts=FALSE)){ install.packages('shinycssloaders', quiet=TRUE) }
 #if(!require(shinythemes, quietly=TRUE, warn.conflicts=FALSE)){ install.packages('shinythemes', quiet=TRUE) }
 #if(!require(shinyjs, quietly=TRUE, warn.conflicts=FALSE)){ install.packages('shinyjs', quiet=TRUE) }
 if(!require(ggplot2, quietly=TRUE, warn.conflicts=FALSE)){ install.packages('ggplot2', quiet = FALSE) }
@@ -344,5 +345,13 @@ guide <- Cicerone$
     </p>",
     is_id = TRUE,
     position = "top-center"
+  )$
+  step(
+    "citation",
+    "How to cite",
+    "<p>
+    If you have used the dbPepVar data analysis, or the Proteogenomics Viewer, please cite.
+    </p>",
+    is_id = TRUE,
+    position = "top-center"
   )
-

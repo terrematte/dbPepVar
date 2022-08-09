@@ -152,9 +152,14 @@ ui <- fluidPage(
                  )
                ),
                ),
+               div(
+                 id = "citation",
                fluidRow(
                  column(12, wellPanel(
                    h4("Citation:"),
+                   
+                   h5(HTML("<b>If you have used dbPepVar data, please cite:</b>")),
+                   
                    HTML(paste0("Lucas Marques da Cunha", tags$sup("1,2"))),
                    HTML(paste0(", Patrick Terrematte", tags$sup("3"))),
                    HTML(paste0(", Tayná da Silva Fiúza", tags$sup("1"))),
@@ -165,14 +170,28 @@ ui <- fluidPage(
                    c("(2022)"),
                    em("\"dbPepVar: a novel cancer proteogenomics database\"."),
                    c("To be published."), br(),  br(),
-                   h4("Affiliations: "),
+                   
+                   h5(HTML("<b>If you have used Proteogenomics Viewer, please cite:</b>")),
+                   
+                   HTML(paste0("José Eduardo Kroll", tags$sup("1"))),
+                   HTML(paste0(", Vandeclécio L. da Silva", tags$sup("1"))),
+                   HTML(paste0(", Sandro José de Souza", tags$sup("1,2"))), 
+                   HTML(paste0(", Gustavo Antônio de Souza", tags$sup("1,5"))),
+                   c("(2017)"),
+                   em("\"A tool for integrating genetic and mass spectrometry‐based peptide data: Proteogenomics Viewer - A genome browser‐like tool, which includes MS data visualization and peptide identification parameters\"."),
+                   c("Bioessays 39 (7),"), a("https://doi.org/10.1002/bies.201700015", href="https://doi.org/10.1002/bies.201700015", target="_blank"), br(),                  
+                   a("[BibTex]", href="misc/citation_ProteogenomicViewer.bib", target="_blank"), c(" "),
+                   a("[RIS]", href="misc/citation_ProteogenomicViewer.ris", target="_blank"), 
+                   br(),br(),
+                   h5("Affiliations: "),
                    HTML(paste0(tags$sup("1"), "Bioinformatics Multidisciplinary Environment - BioME, Federal University of Rio Grande do Norte - UFRN, Brazil")),br(),
                    HTML(paste0(tags$sup("2"), "Federal University of Rondonia - UNIR, Brazil")),br(),
                    HTML(paste0(tags$sup("3"), "Metropolis Digital Institute, UFRN, Brazil")),br(),
                    HTML(paste0(tags$sup("4"), "Brain Institute, UFRN, Brazil")),br(),
-                   HTML(paste0(tags$sup("5"), "Department of Biochemistry, UFRN, Brazil"))
+                   HTML(paste0(tags$sup("5"), "Department of Biochemistry, UFRN, Brazil")),br(),br(),
                    ))
                )
+               ),
              ),
              
     ),
