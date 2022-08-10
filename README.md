@@ -60,16 +60,11 @@ LM Cunha, PCA Terrematte, TS Fiúza, VL Silva, JE Kroll, SJ de Souza, GA de Souz
 
 ### Authors:
 
--   Lucas Marques da Cunha¹
--   Patrick Cesar A. Terrematte¹,
--   Tayná da Silva Fiúza¹,
--   Vandeclécio L. da Silva¹,
--   José Eduardo Kroll¹,
--   Sandro José de Souza¹,²,
--   Gustavo Antônio de Souza¹,³,
+-   Lucas Marques da Cunha
+-   Patrick Cesar A. Terrematte,
+-   Tayná da Silva Fiúza,
+-   Vandeclécio L. da Silva,
+-   José Eduardo Kroll,
+-   Sandro José de Souza,
+-   Gustavo Antônio de Souza.
 
-### Affiliations:
-
-¹ Bioinformatics Multidisciplinary Environment - UFRN,  
-² Brain Institute - UFRN.  
-³ Department of Biochemistry - UFRN
