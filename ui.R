@@ -156,9 +156,9 @@ ui <- fluidPage(
                  id = "citation",
                fluidRow(
                  column(12, wellPanel(
-                   h4("Citation:"),
+                   h4(HTML("<b>Citation:</b>")),
                    
-                   h5(HTML("<b>If you have used dbPepVar data, please cite:</b>")),
+                   h5(HTML("<b># If you have used dbPepVar data, please cite:</b>")),
                    
                    HTML(paste0("Lucas Marques da Cunha", tags$sup("1,2"))),
                    HTML(paste0(", Patrick Terrematte", tags$sup("3"))),
@@ -171,7 +171,7 @@ ui <- fluidPage(
                    em("\"dbPepVar: a novel cancer proteogenomics database\"."),
                    c("To be published."), br(),  br(),
                    
-                   h5(HTML("<b>If you have used Proteogenomics Viewer, please cite:</b>")),
+                   h5(HTML("<b># If you have used Proteogenomics Viewer, please cite:</b>")),
                    
                    HTML(paste0("José Eduardo Kroll", tags$sup("1"))),
                    HTML(paste0(", Vandeclécio L. da Silva", tags$sup("1"))),
@@ -191,7 +191,21 @@ ui <- fluidPage(
                    HTML(paste0(tags$sup("5"), "Department of Biochemistry, UFRN, Brazil")),br(),br(),
                    ))
                )
-               ),
+               ),div(
+                 id = "contact",
+                 fluidRow(
+                   column(12, wellPanel(
+                     h4(HTML("<b>Contact:</b>")),
+                     
+                     c("The dbPepVar team is available for users that want to import their data on demand."),
+                     c("In order to incorporate new data, we will execute the sanity checks with curation, 
+                     data cleaning and preparation steps required to integrate the new data."),br(),
+                     
+                     h5(HTML("<b># If you wish to incorporate new data, or send suggestions, please contact:</b>")),
+                     c("lucas.marques {at} unir.br."),br(),br(),
+                   ))
+                 )
+               )
              ),
              
     ),
