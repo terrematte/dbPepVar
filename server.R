@@ -4,10 +4,11 @@ server <- function(input, output, session) {
   storeWarn<- getOption("warn")
   options(warn = -1) 
 
-  guide$init()$start()
+  #guide$init()$start() #automatic guided tour start
   
   observeEvent(input$guide, {
-    guide$start()
+    #guide$start() # uncomment when automatic guided tour is enabled
+    guide$init()$start() # start guided tour upon click
   })
   
   data <- dbPepVar %>% 
